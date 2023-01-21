@@ -36,6 +36,8 @@ const sellerAmazon = async function () {
   let settingSheet = settingDoc.sheetsById["0"];
   await settingSheet.loadCells("A1:G20");
   settingSheet.getCell(4, 1).value = "";
+  settingSheet.getCell(4, 2).value = "";
+
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
     5,
@@ -86,6 +88,15 @@ const sellerAmazon = async function () {
   const check2fa = async () => {
     let url = await page.url();
     if (url.includes("/ap/mfa")) {
+      settingSheet.getCell(4, 2).value = "Need OTP";
+      await retry(
+        () => Promise.all([settingSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
+      await new Promise((r) => setTimeout(r, 2000));
+      await check2fa();
       let otp = await checkOtp();
       await page.type("#auth-mfa-otpcode", otp);
       await page.waitForTimeout(2000);
@@ -98,7 +109,7 @@ const sellerAmazon = async function () {
       });
       url = await page.url();
       if (url.includes("/ap/mfa")) {
-        settingSheet.getCell(4, 1).value = "Wrong OTP";
+        settingSheet.getCell(4, 2).value = "Wrong OTP, Stopped";
         await retry(
           () => Promise.all([settingSheet.saveUpdatedCells()]),
           5,
@@ -106,7 +117,6 @@ const sellerAmazon = async function () {
           10000
         );
         await new Promise((r) => setTimeout(r, 2000));
-        await check2fa();
       }
     }
   };
