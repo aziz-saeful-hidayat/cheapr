@@ -96,7 +96,6 @@ const sellerAmazon = async function () {
         10000
       );
       await new Promise((r) => setTimeout(r, 2000));
-      await check2fa();
       let otp = await checkOtp();
       await page.type("#auth-mfa-otpcode", otp);
       await page.waitForTimeout(2000);
