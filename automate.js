@@ -26,13 +26,90 @@ const sellerAmazon = async function () {
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo(); // loads document properties and worksheets
   console.log(doc.title);
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:G20");
+  settingSheet.getCell(4, 1).value = "";
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox"],
-    userDataDir: "./user_data",
+    // userDataDir: "./user_data",
   });
   const page = await browser.newPage();
+  const checkOtp = async () => {
+    await settingSheet.loadCells("A1:G20");
+    let otp = settingSheet.getCell(4, 1).value;
+    let length = 0;
+    while (!otp && length != 6) {
+      console.log("Waiting OTP", otp);
+      await settingSheet.loadCells("A1:G20");
+      otp = settingSheet.getCell(4, 1).value;
+      if (otp) {
+        length = otp.toString().length;
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    let otpText = otp.toString();
+    console.log("OTP found:", otp);
+    settingSheet.getCell(4, 1).value = "OTP Found";
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    settingSheet.getCell(4, 1).value = "";
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    return otpText;
+  };
+
+  const check2fa = async () => {
+    let url = await page.url();
+    if (url.includes("/ap/mfa")) {
+      let otp = await checkOtp();
+      await page.type("#auth-mfa-otpcode", otp);
+      await page.waitForTimeout(2000);
+      await page.click("#auth-mfa-remember-device");
+      await page.waitForTimeout(2000);
+      await page.click("#auth-signin-button");
+      console.log("Clicking login");
+      await page.waitForNavigation({
+        waitUntil: "networkidle2",
+      });
+      url = await page.url();
+      if (url.includes("/ap/mfa")) {
+        settingSheet.getCell(4, 1).value = "Wrong OTP";
+        await retry(
+          () => Promise.all([settingSheet.saveUpdatedCells()]),
+          5,
+          true,
+          10000
+        );
+        await new Promise((r) => setTimeout(r, 2000));
+        await check2fa();
+      }
+    }
+  };
   try {
     await page.setJavaScriptEnabled(true);
     await page.setDefaultNavigationTimeout(0);
@@ -40,6 +117,7 @@ const sellerAmazon = async function () {
       waitUntil: "networkidle0",
     });
     let url = await page.url();
+    console.log(url);
     if (!url.includes("/home")) {
       await page.click('a[href*="https://sellercentral.amazon.com/signin"]');
       await page.waitForTimeout(10000);
@@ -47,6 +125,8 @@ const sellerAmazon = async function () {
 
       await page.type("#ap_email", "azizsaefulhidayat@gmail.com");
       await page.type("#ap_password", "@212543fulh");
+      await page.click("input[name='rememberMe']");
+
       await page.waitForTimeout(5000);
       console.log("Typing email & username");
 
@@ -56,8 +136,10 @@ const sellerAmazon = async function () {
       await page.waitForNavigation({
         waitUntil: "networkidle0",
       });
-      url = await page.url();
+      await check2fa();
+      let url = await page.url();
       console.log(url);
+
       if (url.includes("/authorization/select-account")) {
         await page.waitForTimeout(5000);
 
@@ -77,6 +159,7 @@ const sellerAmazon = async function () {
         );
       }
     }
+
     const grabData = async (bpos1, bpos2) => {
       let result = {};
       await page.goto("https://sellercentral.amazon.com/global-picker", {
@@ -415,7 +498,7 @@ const sellerAmazon = async function () {
   } catch (e) {
     console.log(e);
     console.log("Amazon Aziz Error");
-    await browser.close();
+    // await browser.close();
   }
 };
 const sellerAmazonCH = async function () {
@@ -447,6 +530,7 @@ const sellerAmazonCH = async function () {
 
       await page.type("#ap_email", "clarissasolutions@gmail.com");
       await page.type("#ap_password", "f99c00100");
+
       await page.waitForTimeout(5000);
 
       await page.click("#signInSubmit");

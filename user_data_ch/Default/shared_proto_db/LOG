@@ -1,3 +1,2 @@
-2023/01/21-23:18:44.766 10c03 Reusing MANIFEST /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/shared_proto_db/MANIFEST-000001
-2023/01/21-23:18:44.767 10c03 Recovering log #3
-2023/01/21-23:18:44.767 10c03 Reusing old log /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/shared_proto_db/000003.log 
+2023/01/21-23:51:54.288 13603 Creating DB /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/shared_proto_db since it was missing.
+2023/01/21-23:51:54.305 13603 Reusing MANIFEST /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/shared_proto_db/MANIFEST-000001

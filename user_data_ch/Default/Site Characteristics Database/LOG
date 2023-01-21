@@ -1,3 +1,2 @@
-2023/01/21-23:18:43.665 14403 Reusing MANIFEST /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/Site Characteristics Database/MANIFEST-000001
-2023/01/21-23:18:43.665 14403 Recovering log #3
-2023/01/21-23:18:43.666 14403 Reusing old log /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/Site Characteristics Database/000003.log 
+2023/01/21-23:51:52.980 14003 Creating DB /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/Site Characteristics Database since it was missing.
+2023/01/21-23:51:53.007 14003 Reusing MANIFEST /Users/mac/Vscode/puppeteer-heroku-test/user_data_ch/Default/Site Characteristics Database/MANIFEST-000001
