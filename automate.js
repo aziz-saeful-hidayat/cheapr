@@ -43,17 +43,21 @@ const sellerAmazon = async function () {
     if (!url.includes("/home")) {
       await page.click('a[href*="https://sellercentral.amazon.com/signin"]');
       await page.waitForTimeout(10000);
+      console.log("Trying login");
 
       await page.type("#ap_email", "azizsaefulhidayat@gmail.com");
       await page.type("#ap_password", "@212543fulh");
       await page.waitForTimeout(5000);
+      console.log("Typing email & username");
 
       await page.click("#signInSubmit");
+      console.log("Clicking login");
 
       await page.waitForNavigation({
         waitUntil: "networkidle0",
       });
       url = await page.url();
+      console.log(url);
       if (url.includes("/authorization/select-account")) {
         await page.waitForTimeout(5000);
 
@@ -468,6 +472,14 @@ const sellerAmazonCH = async function () {
         await page.click(
           "#picker-container > div > div.picker-footer > div > button"
         );
+      } else if (url.includes("/ap/signin")) {
+        await page.waitForSelector(
+          "#ap-account-switcher-container > div.a-box > div > div > div:nth-child(2) > div:nth-child(3) > div.cvf-widget-form.cvf-widget-form-account-switcher.a-spacing-none > a > div > div > div > div"
+        );
+        await page.click(
+          "#ap-account-switcher-container > div.a-box > div > div > div:nth-child(2) > div:nth-child(3) > div.cvf-widget-form.cvf-widget-form-account-switcher.a-spacing-none > a > div > div > div > div"
+        );
+        await page.waitForTimeout(5000);
       }
     }
 
