@@ -1662,7 +1662,9 @@ const adorama = async function () {
               title: h1,
               price: price,
             };
-            resSheet.getCell(4 + i, 35).value = parseFloat(price);
+            resSheet.getCell(4 + i, 35).value = price
+              ? parseFloat(price)
+              : "N/A";
             results.push(data);
             console.log(data);
           } else {
@@ -1684,7 +1686,9 @@ const adorama = async function () {
               price: price,
             };
             results.push(data);
-            resSheet.getCell(4 + i, 35).value = parseFloat(price);
+            resSheet.getCell(4 + i, 35).value = price
+              ? parseFloat(price)
+              : "N/A";
 
             console.log(data);
           }
