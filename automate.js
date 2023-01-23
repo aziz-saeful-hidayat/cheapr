@@ -1529,16 +1529,16 @@ const bhphotovideo = async function () {
 
 const adorama = async function () {
   const start = new Date();
-  const AdoramacsvWriter = createCsvWriter({
-    path: "adorama.csv",
-    header: [
-      { id: "idx", title: "idx" },
-      { id: "source", title: "MPN from Gsheet" },
-      { id: "title", title: "Title" },
-      { id: "price", title: "Price" },
-      { id: "link", title: "Link" },
-    ],
-  });
+  // const AdoramacsvWriter = createCsvWriter({
+  //   path: "adorama.csv",
+  //   header: [
+  //     { id: "idx", title: "idx" },
+  //     { id: "source", title: "MPN from Gsheet" },
+  //     { id: "title", title: "Title" },
+  //     { id: "price", title: "Price" },
+  //     { id: "link", title: "Link" },
+  //   ],
+  // });
 
   const doc = new GoogleSpreadsheet(
     "1FJbWE8ObEqcnJK-1QQ1iLzfOeQFPO891CKwUFJK_kUI"
@@ -1597,7 +1597,7 @@ const adorama = async function () {
       if (source) {
         let text = typeof source == "string" ? source.trim() : source;
         await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
-          waitUntil: "networkidle0",
+          waitUntil: "networkidle2",
         });
         await checkBlock(`https://www.adorama.com/l/?searchinfo=${text}`);
         let [not_found] = await page.$x(
@@ -1673,7 +1673,7 @@ const adorama = async function () {
               : "N/A";
           } else {
             price = await page.evaluate(() => {
-              let el = document.querySelector("strong.price-final");
+              let el = document.querySelector("strong.your-price");
               return el ? el.innerText : "";
             });
 
@@ -1692,10 +1692,10 @@ const adorama = async function () {
             results.push(data);
             if (not_available) {
               resSheet.getCell(4 + i, 35).backgroundColor = {
-                red: 204,
-                green: 204,
-                blue: 204,
-                alpha: 1,
+                red: 0.85,
+                green: 0.85,
+                blue: 0.85,
+                alpha: 1.0,
               };
             }
             console.log(data);

@@ -73,6 +73,6 @@ app.get("/barcodesinc/", function (req, res) {
   res.send({ result: "barcodesinc Automation started" });
 });
 // Making Express listen on port 7000
-app.listen(process.env.PORT || 80, function () {
-  console.log(`Running on port 80.`);
+app.listen(process.env.PORT || 3000, function () {
+  console.log(`Running on port 3000.`);
 });
