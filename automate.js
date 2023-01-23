@@ -1597,11 +1597,14 @@ const adorama = async function () {
       if (source) {
         let text = typeof source == "string" ? source.trim() : source;
         await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
-          waitUntil: "networkidle2",
+          waitUntil: "networkidle0",
         });
         await checkBlock(`https://www.adorama.com/l/?searchinfo=${text}`);
         let [not_found] = await page.$x(
           '//h1[contains(text(),"Sorry, we didn")]'
+        );
+        let [not_available] = await page.$x(
+          '//*[contains(text(),"This item is no longer available.")]'
         );
         let link1 = "";
         let price = "";
@@ -1662,11 +1665,12 @@ const adorama = async function () {
               title: h1,
               price: price,
             };
-            resSheet.getCell(4 + i, 35).value = price
-              ? parseFloat(price)
-              : "N/A";
+
             results.push(data);
             console.log(data);
+            resSheet.getCell(4 + i, 35).value = price
+              ? parseFloat(price.replace("$", "").replace(",", ""))
+              : "N/A";
           } else {
             price = await page.evaluate(() => {
               let el = document.querySelector("strong.price-final");
@@ -1686,11 +1690,18 @@ const adorama = async function () {
               price: price,
             };
             results.push(data);
-            resSheet.getCell(4 + i, 35).value = price
-              ? parseFloat(price)
-              : "N/A";
-
+            if (not_available) {
+              resSheet.getCell(4 + i, 35).backgroundColor = {
+                red: 204,
+                green: 204,
+                blue: 204,
+                alpha: 1,
+              };
+            }
             console.log(data);
+            resSheet.getCell(4 + i, 35).value = price
+              ? parseFloat(price.replace("$", "").replace(",", ""))
+              : "N/A";
           }
         } else {
           let data = { idx: i, source: source, link: "", title: "", price: "" };
