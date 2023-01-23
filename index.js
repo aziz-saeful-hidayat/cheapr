@@ -37,7 +37,7 @@ const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36";
 
 app.use(cors());
-app.use(express.static("public"));
+app.use("/static", express.static(path.join(__dirname, "public")));
 
 app.get("/amazon/", function (req, res) {
   sellerAmazon();
