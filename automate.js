@@ -507,7 +507,7 @@ const sellerAmazon = async function () {
   } catch (e) {
     console.log(e);
     console.log("Amazon Aziz Error");
-    // await browser.close();
+    await browser.close();
   }
 };
 const sellerAmazonCH = async function () {
@@ -1547,7 +1547,9 @@ const adorama = async function () {
   await doc.loadInfo(); // loads document properties and worksheets
   console.log(doc.title);
   let resSheet = doc.sheetsById["1771276982"];
-  await resSheet.loadCells("H1:H1500");
+  await resSheet.loadCells("H1:H833");
+  await resSheet.loadCells("AJ1:AJ833");
+
   puppeteer.use(StealthPlugin());
   let browser = await puppeteer.launch({
     headless: false,
@@ -1580,7 +1582,7 @@ const adorama = async function () {
         await checkBlock(url);
       }
     };
-    for (let i = 0; i < 1500; i++) {
+    for (let i = 0; i < 833; i++) {
       let source = resSheet.getCell(4 + i, 7).value;
       if (source && source in visited) {
         let getdata = results.find((e) => {
@@ -1660,6 +1662,7 @@ const adorama = async function () {
               title: h1,
               price: price,
             };
+            resSheet.getCell(4 + i, 35).value = parseFloat(price);
             results.push(data);
             console.log(data);
           } else {
@@ -1681,28 +1684,45 @@ const adorama = async function () {
               price: price,
             };
             results.push(data);
+            resSheet.getCell(4 + i, 35).value = parseFloat(price);
+
             console.log(data);
           }
         } else {
           let data = { idx: i, source: source, link: "", title: "", price: "" };
           results.push(data);
+          resSheet.getCell(4 + i, 35).value = "N/A";
           console.log(data);
         }
       }
       visited.push(source);
+      if (i % 20 == 0) {
+        await retry(
+          () => Promise.all([resSheet.saveUpdatedCells()]),
+          5,
+          true,
+          10000
+        );
+      }
     }
-    AdoramacsvWriter.writeRecords(results).then(() =>
-      console.log("The CSV file was written successfully")
+    await retry(
+      () => Promise.all([resSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
     );
+    // AdoramacsvWriter.writeRecords(results).then(() =>
+    //   console.log("The CSV file was written successfully")
+    // );
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
   } catch (e) {
     console.log(e);
     console.log("Adorama Error");
-    AdoramacsvWriter.writeRecords(results).then(() =>
-      console.log("The CSV file was written successfully")
-    );
+    // AdoramacsvWriter.writeRecords(results).then(() =>
+    //   console.log("The CSV file was written successfully")
+    // );
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
