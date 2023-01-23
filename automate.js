@@ -1564,6 +1564,9 @@ const adorama = async function () {
     await page.goto("https://www.adorama.com/", {
       waitUntil: "networkidle2",
     });
+    await page.screenshot({
+      path: `public/adorama/home.png`,
+    });
     const checkBlock = async (url) => {
       let block = await page.evaluate(() => {
         let el = document.querySelector("#px-captcha");
@@ -1598,6 +1601,9 @@ const adorama = async function () {
         let text = typeof source == "string" ? source.trim() : source;
         await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
           waitUntil: "networkidle2",
+        });
+        await page.screenshot({
+          path: `public/adorama/${text}.png`,
         });
         await checkBlock(`https://www.adorama.com/l/?searchinfo=${text}`);
         let [not_found] = await page.$x(
