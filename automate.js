@@ -17,6 +17,10 @@ const defaultViewport = {
   width: 1280,
 };
 const { executablePath } = require("puppeteer");
+PROXY_USERNAME = "scraperapi";
+PROXY_PASSWORD = "e5d87185d49c8749431089fa73ef4731"; // <-- enter your API_Key here
+PROXY_SERVER = "proxy-server.scraperapi.com";
+PROXY_SERVER_PORT = "8001";
 
 const cstOptions = {
   timeZone: "CST",
@@ -43,7 +47,9 @@ const sellerAmazon = async function () {
   let settingSheet = settingDoc.sheetsById["0"];
   await settingSheet.loadCells("A1:G20");
   settingSheet.getCell(4, 1).value = "";
-  settingSheet.getCell(4, 2).value = "STARTNG";
+  settingSheet.getCell(4, 2).value = "STARTING";
+  settingSheet.getCell(4, 4).value = "";
+
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
     5,
@@ -511,10 +517,10 @@ const sellerAmazon = async function () {
     let result_data_3 = await grabData(4, 3);
     await writeSheet(result_data_3, "753769627");
 
-    let dateFormat = new Date(parseInt(row_data[0]) * 1000);
+    let dateFormat = new Date();
 
     settingSheet.getCell(4, 2).value = "COMPLETED";
-    settingSheet.getCell(4, 3).value = "COMPLETED";
+    settingSheet.getCell(4, 3).value = dateFormat;
 
     await retry(
       () => Promise.all([settingSheet.saveUpdatedCells()]),
@@ -526,6 +532,18 @@ const sellerAmazon = async function () {
   } catch (e) {
     console.log(e);
     console.log("Amazon Aziz Error");
+    let dateFormat = new Date();
+
+    settingSheet.getCell(4, 2).value = "ERROR";
+    settingSheet.getCell(4, 3).value = dateFormat;
+    settingSheet.getCell(4, 4).value = e;
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
     await browser.close();
   }
 };
@@ -1568,11 +1586,19 @@ const adorama = async function () {
   puppeteer.use(StealthPlugin());
 
   let browser = await puppeteer.launch({
+    ignoreHTTPSErrors: true,
     headless: false,
-    args: ["--no-sandbox"],
+    args: [
+      "--no-sandbox",
+      `--proxy-server=http://${PROXY_SERVER}:${PROXY_SERVER_PORT}`,
+    ],
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
+  await page.authenticate({
+    username: PROXY_USERNAME,
+    password: PROXY_PASSWORD,
+  });
   await page.setViewport(Object.assign({}, defaultViewport));
   let results = [];
   let visited = [];

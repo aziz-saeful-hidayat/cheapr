@@ -44,10 +44,10 @@ app.get("/amazon/", function (req, res) {
   res.send({ result: "Amazon Automation started" });
 });
 
-app.get("/amazon_ch/", function (req, res) {
-  sellerAmazonCH();
-  res.send({ result: "Amazon CH Automation started" });
-});
+// app.get("/amazon_ch/", function (req, res) {
+//   sellerAmazonCH();
+//   res.send({ result: "Amazon CH Automation started" });
+// });
 
 app.get("/walmart/", function (req, res) {
   walmart();
