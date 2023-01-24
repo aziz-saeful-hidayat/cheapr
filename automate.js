@@ -59,7 +59,7 @@ const sellerAmazon = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     executablePath: executablePath(),
     userDataDir: "./user_data",
   });
@@ -559,7 +559,7 @@ const sellerAmazonCH = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     userDataDir: "./user_data_ch",
     executablePath: executablePath(),
   });
@@ -966,7 +966,7 @@ const walmart = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     executablePath: executablePath(),
   });
   const page = await browser.newPage();
@@ -1264,7 +1264,7 @@ const commision = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     executablePath: executablePath(),
     userDataDir: "./user_data",
   });
@@ -1473,7 +1473,7 @@ const bhphotovideo = async function () {
   puppeteer.use(StealthPlugin());
   let browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
@@ -1495,7 +1495,11 @@ const bhphotovideo = async function () {
         await browser.close();
         browser = await puppeteer.launch({
           headless: false,
-          args: ["--no-sandbox"],
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--single-process",
+          ],
           executablePath: executablePath(),
         });
         page = await browser.newPage();
@@ -1631,6 +1635,8 @@ const adorama = async function () {
     headless: false,
     args: [
       "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--single-process",
       `--proxy-server=http://${PROXY_SERVER}:${PROXY_SERVER_PORT}`,
     ],
     executablePath: executablePath(),
@@ -1665,7 +1671,11 @@ const adorama = async function () {
         await browser.close();
         browser = await puppeteer.launch({
           headless: false,
-          args: ["--no-sandbox"],
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--single-process",
+          ],
           executablePath: executablePath(),
         });
         page = await browser.newPage();
@@ -1864,7 +1874,7 @@ const barcodesinc = async function () {
   puppeteer.use(StealthPlugin());
   let browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
@@ -1887,7 +1897,11 @@ const barcodesinc = async function () {
         await browser.close();
         browser = await puppeteer.launch({
           headless: false,
-          args: ["--no-sandbox"],
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--single-process",
+          ],
           executablePath: executablePath(),
         });
         page = await browser.newPage();
