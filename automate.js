@@ -45,7 +45,7 @@ const sellerAmazon = async function () {
   console.log(settingDoc.title);
 
   let settingSheet = settingDoc.sheetsById["0"];
-  await settingSheet.loadCells("A1:G20");
+  await settingSheet.loadCells("A1:H40");
   settingSheet.getCell(4, 1).value = "";
   settingSheet.getCell(4, 2).value = "RUNNING";
   settingSheet.getCell(4, 4).value = "";
@@ -144,9 +144,10 @@ const sellerAmazon = async function () {
       await page.click('a[href*="https://sellercentral.amazon.com/signin"]');
       await page.waitForTimeout(10000);
       console.log("Trying login");
-
-      await page.type("#ap_email", "azizsaefulhidayat@gmail.com");
-      await page.type("#ap_password", "@212543fulh");
+      let username = settingSheet.getCell(4, 6).value;
+      let password = settingSheet.getCell(4, 7).value;
+      await page.type("#ap_email", username);
+      await page.type("#ap_password", password);
       await page.click("input[name='rememberMe']");
 
       await page.waitForTimeout(5000);
@@ -971,7 +972,7 @@ const walmart = async function () {
   console.log(settingDoc.title);
 
   let settingSheet = settingDoc.sheetsById["0"];
-  await settingSheet.loadCells("A1:G20");
+  await settingSheet.loadCells("A1:H40");
   settingSheet.getCell(7, 1).value = "";
   settingSheet.getCell(7, 2).value = "RUNNING";
   settingSheet.getCell(7, 4).value = "";
@@ -995,17 +996,17 @@ const walmart = async function () {
     await page.goto("https://seller.walmart.com/", {
       waitUntil: "networkidle0",
     });
-    await page.type(
-      'input[data-automation-id="uname"]',
-      "catherinedanila00@outlook.com"
-    );
-    await page.type('input[data-automation-id="pwd"]', "Walmart01*");
+    let username = settingSheet.getCell(7, 6).value;
+    let password = settingSheet.getCell(7, 7).value;
+
+    await page.type('input[data-automation-id="uname"]', username);
+    await page.type('input[data-automation-id="pwd"]', password);
+    await page.waitForTimeout(2000);
 
     await page.click('button[data-automation-id="loginBtn"]');
 
-    await page.waitForNavigation({
-      waitUntil: "networkidle0",
-    });
+    await page.waitForTimeout(5000);
+
     await page.waitForFunction("window.location.pathname == '/home'", {
       timeout: 500000,
     });
