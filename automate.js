@@ -61,7 +61,7 @@ const sellerAmazon = async function () {
     headless: false,
     args: ["--no-sandbox"],
     executablePath: executablePath(),
-    // userDataDir: "./user_data",
+    userDataDir: "./user_data",
   });
   const page = await browser.newPage();
   const checkOtp = async () => {
