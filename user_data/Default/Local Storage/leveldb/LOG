@@ -1,8 +1,0 @@
-2023/01/21-21:07:35.577 3403 Reusing MANIFEST /Users/mac/Vscode/puppeteer-heroku-test/user_data/Default/Local Storage/leveldb/MANIFEST-000001
-2023/01/21-21:07:35.579 3403 Recovering log #10
-2023/01/21-21:07:35.579 3403 Level-0 table #13: started
-2023/01/21-21:07:35.584 3403 Level-0 table #13: 19094 bytes OK
-2023/01/21-21:07:35.584 3403 Recovering log #13
-2023/01/21-21:07:35.585 3403 Reusing old log /Users/mac/Vscode/puppeteer-heroku-test/user_data/Default/Local Storage/leveldb/000013.log 
-2023/01/21-21:07:35.593 3403 Delete type=0 #10
-2023/01/21-21:07:35.593 3403 Delete type=2 #14
