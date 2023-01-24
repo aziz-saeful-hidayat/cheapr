@@ -944,6 +944,25 @@ const walmart = async function () {
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo(); // loads document properties and worksheets
   console.log(doc.title);
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:G20");
+  settingSheet.getCell(7, 1).value = "";
+  settingSheet.getCell(7, 2).value = "STARTING";
+  settingSheet.getCell(7, 4).value = "";
+
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
@@ -1181,11 +1200,33 @@ const walmart = async function () {
     //   true,
     //   10000
     // );
+    let dateFormat = new Date();
 
+    settingSheet.getCell(7, 2).value = "COMPLETED";
+    settingSheet.getCell(7, 3).value = dateFormat;
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
     await browser.close();
   } catch (e) {
     console.log(e);
     console.log("Walmart Error");
+    let dateFormat = new Date();
+
+    settingSheet.getCell(7, 2).value = "ERROR";
+    settingSheet.getCell(7, 3).value = dateFormat;
+    settingSheet.getCell(7, 4).value = e;
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
     // await page.goto(
     //   "https://communityminerals-f099fc.pipedrive.com/auth/logout",
     //   {
