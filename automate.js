@@ -47,7 +47,7 @@ const sellerAmazon = async function () {
   let settingSheet = settingDoc.sheetsById["0"];
   await settingSheet.loadCells("A1:G20");
   settingSheet.getCell(4, 1).value = "";
-  settingSheet.getCell(4, 2).value = "STARTING";
+  settingSheet.getCell(4, 2).value = "RUNNING";
   settingSheet.getCell(4, 4).value = "";
 
   await retry(
@@ -973,7 +973,7 @@ const walmart = async function () {
   let settingSheet = settingDoc.sheetsById["0"];
   await settingSheet.loadCells("A1:G20");
   settingSheet.getCell(7, 1).value = "";
-  settingSheet.getCell(7, 2).value = "STARTING";
+  settingSheet.getCell(7, 2).value = "RUNNING";
   settingSheet.getCell(7, 4).value = "";
 
   await retry(
