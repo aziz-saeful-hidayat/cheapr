@@ -499,7 +499,8 @@ const sellerAmazon = async function () {
           parseFloat(result["cr"]) / 100
         );
         resSheet.getCell(16, 26).formula = "=A17";
-        resSheet.getCell(16, 27).formula = "=VLOOKUP(Y17,A$16:T$51,Z$14,FALSE)";
+        resSheet.getCell(16, 27).formula =
+          "=VLOOKUP(AA17,A$16:T$57,AB$14,FALSE)";
       }
       await retry(
         () => Promise.all([resSheet.saveUpdatedCells()]),
