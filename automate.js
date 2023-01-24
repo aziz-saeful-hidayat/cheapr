@@ -1590,7 +1590,11 @@ const adorama = async function () {
         let el = document.querySelector("#px-captcha");
         return el ? true : false;
       });
-      if (block) {
+      let h1 = await page.evaluate(() => {
+        let el = document.querySelector("h1");
+        return el ? true : false;
+      });
+      if (h1 && block) {
         await browser.close();
         browser = await puppeteer.launch({
           headless: false,
