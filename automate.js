@@ -58,7 +58,7 @@ const sellerAmazon = async function () {
   );
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     executablePath: executablePath(),
     userDataDir: "./user_data",
@@ -983,7 +983,7 @@ const walmart = async function () {
   );
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
     executablePath: executablePath(),
   });
