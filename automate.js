@@ -519,8 +519,17 @@ const sellerAmazon = async function () {
 
     let dateFormat = new Date();
 
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(4, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
     settingSheet.getCell(4, 2).value = "COMPLETED";
-    settingSheet.getCell(4, 3).value = dateFormat;
 
     await retry(
       () => Promise.all([settingSheet.saveUpdatedCells()]),
@@ -534,9 +543,18 @@ const sellerAmazon = async function () {
     console.log("Amazon Aziz Error");
     let dateFormat = new Date();
 
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(4, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+
     settingSheet.getCell(4, 2).value = "ERROR";
-    settingSheet.getCell(4, 3).value = dateFormat;
-    settingSheet.getCell(4, 4).value = e;
 
     await retry(
       () => Promise.all([settingSheet.saveUpdatedCells()]),
@@ -1202,8 +1220,18 @@ const walmart = async function () {
     // );
     let dateFormat = new Date();
 
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(7, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+
     settingSheet.getCell(7, 2).value = "COMPLETED";
-    settingSheet.getCell(7, 3).value = dateFormat;
 
     await retry(
       () => Promise.all([settingSheet.saveUpdatedCells()]),
@@ -1217,9 +1245,18 @@ const walmart = async function () {
     console.log("Walmart Error");
     let dateFormat = new Date();
 
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(7, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+
     settingSheet.getCell(7, 2).value = "ERROR";
-    settingSheet.getCell(7, 3).value = dateFormat;
-    settingSheet.getCell(7, 4).value = e;
 
     await retry(
       () => Promise.all([settingSheet.saveUpdatedCells()]),
