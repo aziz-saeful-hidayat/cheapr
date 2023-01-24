@@ -10,6 +10,11 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const RecaptchaPlugin = require("puppeteer-extra-plugin-recaptcha");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
+const { Cluster } = require("puppeteer-cluster");
+const vanillaPuppeteer = require("puppeteer");
+const os = require("node:os");
+
+const { executablePath } = require("puppeteer");
 
 const cstOptions = {
   timeZone: "CST",
@@ -36,8 +41,7 @@ const sellerAmazon = async function () {
   let settingSheet = settingDoc.sheetsById["0"];
   await settingSheet.loadCells("A1:G20");
   settingSheet.getCell(4, 1).value = "";
-  settingSheet.getCell(4, 2).value = "";
-
+  settingSheet.getCell(4, 2).value = "STARTNG";
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
     5,
@@ -48,6 +52,7 @@ const sellerAmazon = async function () {
   const browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox"],
+    executablePath: executablePath(),
     // userDataDir: "./user_data",
   });
   const page = await browser.newPage();
@@ -503,6 +508,18 @@ const sellerAmazon = async function () {
 
     let result_data_3 = await grabData(4, 3);
     await writeSheet(result_data_3, "753769627");
+
+    let dateFormat = new Date(parseInt(row_data[0]) * 1000);
+
+    settingSheet.getCell(4, 2).value = "COMPLETED";
+    settingSheet.getCell(4, 3).value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
     await browser.close();
   } catch (e) {
     console.log(e);
@@ -524,6 +541,7 @@ const sellerAmazonCH = async function () {
     headless: false,
     args: ["--no-sandbox"],
     userDataDir: "./user_data_ch",
+    executablePath: executablePath(),
   });
   const page = await browser.newPage();
   try {
@@ -910,6 +928,7 @@ const walmart = async function () {
   const browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox"],
+    executablePath: executablePath(),
   });
   const page = await browser.newPage();
   try {
@@ -1185,6 +1204,7 @@ const commision = async function () {
   const browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox"],
+    executablePath: executablePath(),
     userDataDir: "./user_data",
   });
   const page = await browser.newPage();
@@ -1393,6 +1413,7 @@ const bhphotovideo = async function () {
   let browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox"],
+    executablePath: executablePath(),
   });
   let page = await browser.newPage();
   let results = [];
@@ -1413,6 +1434,7 @@ const bhphotovideo = async function () {
         browser = await puppeteer.launch({
           headless: false,
           args: ["--no-sandbox"],
+          executablePath: executablePath(),
         });
         page = await browser.newPage();
         await page.goto(url, {
@@ -1529,17 +1551,6 @@ const bhphotovideo = async function () {
 
 const adorama = async function () {
   const start = new Date();
-  // const AdoramacsvWriter = createCsvWriter({
-  //   path: "adorama.csv",
-  //   header: [
-  //     { id: "idx", title: "idx" },
-  //     { id: "source", title: "MPN from Gsheet" },
-  //     { id: "title", title: "Title" },
-  //     { id: "price", title: "Price" },
-  //     { id: "link", title: "Link" },
-  //   ],
-  // });
-
   const doc = new GoogleSpreadsheet(
     "1FJbWE8ObEqcnJK-1QQ1iLzfOeQFPO891CKwUFJK_kUI"
   );
@@ -1549,11 +1560,14 @@ const adorama = async function () {
   let resSheet = doc.sheetsById["1771276982"];
   await resSheet.loadCells("H1:H833");
   await resSheet.loadCells("AJ1:AJ833");
-
+  // Create a custom puppeteer-extra instance using `addExtra`,
+  // so we could create additional ones with different plugin config.
   puppeteer.use(StealthPlugin());
+
   let browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox"],
+    executablePath: executablePath(),
   });
   let page = await browser.newPage();
   let results = [];
@@ -1564,9 +1578,9 @@ const adorama = async function () {
     await page.goto("https://www.adorama.com/", {
       waitUntil: "networkidle2",
     });
-    await page.screenshot({
-      path: `public/adorama/home.png`,
-    });
+    // await page.screenshot({
+    //   path: `public/adorama/home.png`,
+    // });
     const checkBlock = async (url) => {
       let block = await page.evaluate(() => {
         let el = document.querySelector("#px-captcha");
@@ -1577,6 +1591,7 @@ const adorama = async function () {
         browser = await puppeteer.launch({
           headless: false,
           args: ["--no-sandbox"],
+          executablePath: executablePath(),
         });
         page = await browser.newPage();
         await page.goto(url, {
@@ -1602,9 +1617,9 @@ const adorama = async function () {
         await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
           waitUntil: "networkidle2",
         });
-        await page.screenshot({
-          path: `public/adorama/${text}.png`,
-        });
+        // await page.screenshot({
+        //   path: `public/adorama/${text}.png`,
+        // });
         await checkBlock(`https://www.adorama.com/l/?searchinfo=${text}`);
         let [not_found] = await page.$x(
           '//h1[contains(text(),"Sorry, we didn")]'
@@ -1775,6 +1790,7 @@ const barcodesinc = async function () {
   let browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox"],
+    executablePath: executablePath(),
   });
   let page = await browser.newPage();
   let results = [];
@@ -1795,6 +1811,7 @@ const barcodesinc = async function () {
         browser = await puppeteer.launch({
           headless: false,
           args: ["--no-sandbox"],
+          executablePath: executablePath(),
         });
         page = await browser.newPage();
         await page.goto(url, {
