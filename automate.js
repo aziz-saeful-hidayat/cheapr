@@ -10,7 +10,6 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const RecaptchaPlugin = require("puppeteer-extra-plugin-recaptcha");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
-const { Cluster } = require("puppeteer-cluster");
 const vanillaPuppeteer = require("puppeteer");
 const os = require("node:os");
 const defaultViewport = {
