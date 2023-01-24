@@ -13,7 +13,10 @@ const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const { Cluster } = require("puppeteer-cluster");
 const vanillaPuppeteer = require("puppeteer");
 const os = require("node:os");
-
+const defaultViewport = {
+  height: 1920,
+  width: 1280,
+};
 const { executablePath } = require("puppeteer");
 
 const cstOptions = {
@@ -1416,6 +1419,7 @@ const bhphotovideo = async function () {
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
+  await page.setViewport(Object.assign({}, defaultViewport));
   let results = [];
   let visited = [];
   try {
@@ -1570,6 +1574,7 @@ const adorama = async function () {
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
+  await page.setViewport(Object.assign({}, defaultViewport));
   let results = [];
   let visited = [];
   try {
@@ -1617,9 +1622,9 @@ const adorama = async function () {
         await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
           waitUntil: "networkidle2",
         });
-        // await page.screenshot({
-        //   path: `public/adorama/${text}.png`,
-        // });
+        await page.screenshot({
+          path: `public/adorama/${text}.png`,
+        });
         await checkBlock(`https://www.adorama.com/l/?searchinfo=${text}`);
         let [not_found] = await page.$x(
           '//h1[contains(text(),"Sorry, we didn")]'
@@ -1793,6 +1798,8 @@ const barcodesinc = async function () {
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
+  await page.setViewport(Object.assign({}, defaultViewport));
+
   let results = [];
   let visited = [];
   try {
