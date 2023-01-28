@@ -12,7 +12,6 @@ const RecaptchaPlugin = require("puppeteer-extra-plugin-recaptcha");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const vanillaPuppeteer = require("puppeteer");
 const os = require("node:os");
-const fetch = require("node-fetch");
 
 const defaultViewport = {
   height: 1920,
@@ -1549,14 +1548,12 @@ const updateProduct = function (site, mpn, price, in_stock) {
     price: dec_price,
     in_stock: in_stock,
   };
-
-  fetch("http://103.49.239.195/update_product", {
-    method: "POST", // or 'PUT'
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
+  axios
+    .post("http://103.49.239.195/update_product", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
     .then((response) => response.json())
     .then((data) => {
       console.log("Success:", data);
@@ -1617,6 +1614,8 @@ const bhphotovideo = async function () {
       });
       if (block || blocked) {
         await browser.close();
+        await new Promise((r) => setTimeout(r, 10000));
+
         browser = await puppeteer.launch({
           headless: true,
           args: ["--no-sandbox"],
@@ -1631,13 +1630,16 @@ const bhphotovideo = async function () {
         await checkBlock(url);
       }
     };
-    let response = await fetch("http://103.49.239.195/get_mpns", {
-      method: "POST", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ site: "B&H" }),
-    });
+    let response = await axios.post(
+      "http://103.49.239.195/get_mpns",
+      { site: "B&H" },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
     let jsonData = await response.json();
     console.log("B&H", jsonData.length);
     for (let i = 0; i < jsonData.length; i++) {
@@ -1858,6 +1860,8 @@ const adorama = async function () {
       });
       if (block || blocked) {
         await browser.close();
+        await new Promise((r) => setTimeout(r, 10000));
+
         browser = await puppeteer.launch({
           headless: true,
           args: ["--no-sandbox"],
@@ -1872,13 +1876,16 @@ const adorama = async function () {
         await checkBlock(url);
       }
     };
-    let response = await fetch("http://103.49.239.195/get_mpns", {
-      method: "POST", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ site: "Adorama" }),
-    });
+
+    let response = await axios.post(
+      "http://103.49.239.195/get_mpns",
+      { site: "Adorama" },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     let jsonData = await response.json();
     console.log("Adorama", jsonData.length);
     for (let i = 0; i < jsonData.length; i++) {
@@ -2104,13 +2111,16 @@ const barcodesinc = async function () {
     await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
       waitUntil: "networkidle2",
     });
-    let response = await fetch("http://103.49.239.195/get_mpns", {
-      method: "POST", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ site: "Barcodes Inc" }),
-    });
+
+    let response = await axios.post(
+      "http://103.49.239.195/get_mpns",
+      { site: "Barcodes Inc" },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     let jsonData = await response.json();
     console.log("Barcodes Inc", jsonData.length);
     for (let i = 0; i < jsonData.length; i++) {
@@ -2137,6 +2147,8 @@ const barcodesinc = async function () {
             );
             if (block || blocked) {
               await browser.close();
+              await new Promise((r) => setTimeout(r, 10000));
+
               browser = await puppeteer.launch({
                 headless: false,
                 args: ["--no-sandbox"],
