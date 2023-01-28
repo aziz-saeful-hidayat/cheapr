@@ -12,6 +12,7 @@ const RecaptchaPlugin = require("puppeteer-extra-plugin-recaptcha");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const vanillaPuppeteer = require("puppeteer");
 const os = require("node:os");
+const fetch = require("node-fetch");
 
 const defaultViewport = {
   height: 1920,

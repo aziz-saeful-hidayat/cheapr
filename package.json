@@ -24,7 +24,7 @@
     "google-spreadsheet": "^3.3.0",
     "jsdom": "^20.0.0",
     "needle": "^3.1.0",
-    "node-fetch": "^3.2.10",
+    "node-fetch": "^3.3.0",
     "nodemailer": "^6.7.8",
     "os": "^0.1.2",
     "proxy-chain": "^2.0.6",
