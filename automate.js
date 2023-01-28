@@ -979,7 +979,7 @@ const walmart = async function () {
   );
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     args: ["--no-sandbox"],
     executablePath: executablePath(),
   });
@@ -1586,7 +1586,7 @@ const bhphotovideo = async function () {
 
   puppeteer.use(StealthPlugin());
   let browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     args: ["--no-sandbox"],
     executablePath: executablePath(),
   });
@@ -1617,7 +1617,7 @@ const bhphotovideo = async function () {
         await new Promise((r) => setTimeout(r, 10000));
 
         browser = await puppeteer.launch({
-          headless: true,
+          headless: false,
           args: ["--no-sandbox"],
           executablePath: executablePath(),
         });
@@ -1833,7 +1833,7 @@ const adorama = async function () {
   puppeteer.use(StealthPlugin());
 
   let browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     args: ["--no-sandbox"],
     executablePath: executablePath(),
   });
@@ -1863,7 +1863,7 @@ const adorama = async function () {
         await new Promise((r) => setTimeout(r, 10000));
 
         browser = await puppeteer.launch({
-          headless: true,
+          headless: false,
           args: ["--no-sandbox"],
           executablePath: executablePath(),
         });
