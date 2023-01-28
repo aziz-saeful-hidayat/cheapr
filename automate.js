@@ -1564,18 +1564,9 @@ const updateProduct = function (site, mpn, price, in_stock) {
       console.error("Error:", error);
     });
 };
+
 const bhphotovideo = async function () {
   const start = new Date();
-  const doc = new GoogleSpreadsheet(
-    "1FJbWE8ObEqcnJK-1QQ1iLzfOeQFPO891CKwUFJK_kUI"
-  );
-  await doc.useServiceAccountAuth(creds);
-  await doc.loadInfo(); // loads document properties and worksheets
-  console.log(doc.title);
-  let resSheet = doc.sheetsById["1771276982"];
-  await resSheet.loadCells("H1:H1500");
-  await resSheet.loadCells("AK1:AK1500");
-
   const settingDoc = new GoogleSpreadsheet(
     "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
   );
@@ -1587,8 +1578,6 @@ const bhphotovideo = async function () {
   await settingSheet.loadCells("A1:H40");
   settingSheet.getCell(16, 1).value = "";
   settingSheet.getCell(16, 2).value = "RUNNING";
-  let first = settingSheet.getCell(16, 6).value;
-  let last = settingSheet.getCell(16, 7).value;
 
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
@@ -1606,6 +1595,7 @@ const bhphotovideo = async function () {
   let page = await browser.newPage();
   let results = [];
   let visited = [];
+
   try {
     await page.setJavaScriptEnabled(true);
     await page.setDefaultNavigationTimeout(0);
@@ -1640,8 +1630,17 @@ const bhphotovideo = async function () {
         await checkBlock(url);
       }
     };
-    for (let i = first; i < last; i++) {
-      let source = resSheet.getCell(4 + i, 7).value;
+    let response = await fetch("http://103.49.239.195/get_mpns", {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ site: "B&H" }),
+    });
+    let jsonData = await response.json();
+    console.log("B&H", jsonData.length);
+    for (let i = 0; i < jsonData.length; i++) {
+      let source = jsonData[i]["mpn"];
       if (source && source in visited) {
         let getdata = results.find((e) => {
           e.source == source;
@@ -1730,30 +1729,9 @@ const bhphotovideo = async function () {
           price: price,
           in_stock: in_stock,
         };
+        in_stock = price ? in_stock == "In Stock" : true;
         results.push(data);
-        updateProduct(
-          "B&H",
-          source,
-          price,
-          price ? in_stock == "In Stock" : true
-        );
-        // resSheet.getCell(4 + i, 36).value = price
-        //   ? parseFloat(price.replace("$", "").replace(",", ""))
-        //   : "N/A";
-        // resSheet.getCell(4 + i, 36).backgroundColor = {
-        //   red: 1,
-        //   green: 1,
-        //   blue: 1,
-        //   alpha: 1.0,
-        // };
-        // if (in_stock != "In Stock" && price) {
-        //   resSheet.getCell(4 + i, 36).backgroundColor = {
-        //     red: 0.85,
-        //     green: 0.85,
-        //     blue: 0.85,
-        //     alpha: 1.0,
-        //   };
-        // }
+        updateProduct("B&H", source, price, in_stock);
         console.log(data);
       }
       settingSheet.getCell(16, 6).value = i;
@@ -1893,8 +1871,17 @@ const adorama = async function () {
         await checkBlock(url);
       }
     };
-    for (let i = first; i < last; i++) {
-      let source = resSheet.getCell(4 + i, 7).value;
+    let response = await fetch("http://103.49.239.195/get_mpns", {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ site: "Adorama" }),
+    });
+    let jsonData = await response.json();
+    console.log("Adorama", jsonData.length);
+    for (let i = 0; i < jsonData.length; i++) {
+      let source = jsonData[i]["mpn"];
       if (source && source in visited) {
         let getdata = results.find((e) => {
           e.source == source;
@@ -1992,17 +1979,14 @@ const adorama = async function () {
             price: price,
             in_stock: in_stock,
           };
+          in_stock = price
+            ? in_stock.includes("In Stock") &&
+              in_stock.includes("Ships from Manufacturer")
+            : true;
           results.push(data);
           if (mpn.includes(text.replace("-", ""))) {
             console.log(data);
-            updateProduct(
-              "Adorama",
-              source,
-              price,
-              !in_stock.includes("In Stock") &&
-                !in_stock.includes("Ships from Manufacturer") &&
-                price
-            );
+            updateProduct("Adorama", source, price, in_stock);
           } else {
             updateProduct("Adorama", source, null, true);
             console.log(data);
@@ -2119,9 +2103,17 @@ const barcodesinc = async function () {
     await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
       waitUntil: "networkidle2",
     });
-
-    for (let i = first; i < last; i++) {
-      let source = resSheet.getCell(4 + i, 7).value;
+    let response = await fetch("http://103.49.239.195/get_mpns", {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ site: "Barcodes Inc" }),
+    });
+    let jsonData = await response.json();
+    console.log("Barcodes Inc", jsonData.length);
+    for (let i = 0; i < jsonData.length; i++) {
+      let source = jsonData[i]["mpn"];
       if (source) {
         if (source in visited) {
           let getdata = results.find((e) => {
@@ -2276,13 +2268,8 @@ const barcodesinc = async function () {
                 price: price,
                 in_stock: in_stock,
               };
-
-              updateProduct(
-                "Barcodes Inc",
-                source,
-                price,
-                in_stock != "In Stock" && price
-              );
+              in_stock = price ? in_stock == "In Stock" : true;
+              updateProduct("Barcodes Inc", source, price, in_stock);
               results.push(data);
               console.log(data);
             } else {
@@ -2308,14 +2295,11 @@ const barcodesinc = async function () {
                 price: price,
                 in_stock: in_stock,
               };
+              in_stock = price ? in_stock == "In Stock" : true;
+
               if (h1.includes(text) && price) {
                 link1 = await page.url();
-                updateProduct(
-                  "Barcodes Inc",
-                  source,
-                  price,
-                  in_stock != "In Stock" && price
-                );
+                updateProduct("Barcodes Inc", source, price, in_stock);
                 results.push(data);
                 console.log(data);
               } else {
