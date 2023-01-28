@@ -1554,7 +1554,7 @@ const updateProduct = function (site, mpn, price, in_stock) {
         "Content-Type": "application/json",
       },
     })
-    .then((response) => response.json())
+    .then((response) => response.data)
     .then((data) => {
       console.log("Success:", data);
     })
@@ -1640,7 +1640,7 @@ const bhphotovideo = async function () {
       }
     );
 
-    let jsonData = await response.json();
+    let jsonData = await response.data;
     console.log("B&H", jsonData.length);
     for (let i = 0; i < jsonData.length; i++) {
       let source = jsonData[i]["mpn"];
@@ -1886,7 +1886,7 @@ const adorama = async function () {
         },
       }
     );
-    let jsonData = await response.json();
+    let jsonData = await response.data;
     console.log("Adorama", jsonData.length);
     for (let i = 0; i < jsonData.length; i++) {
       let source = jsonData[i]["mpn"];
@@ -2121,7 +2121,7 @@ const barcodesinc = async function () {
         },
       }
     );
-    let jsonData = await response.json();
+    let jsonData = await response.data;
     console.log("Barcodes Inc", jsonData.length);
     for (let i = 0; i < jsonData.length; i++) {
       let source = jsonData[i]["mpn"];
