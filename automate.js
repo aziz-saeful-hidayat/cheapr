@@ -12,6 +12,7 @@ const RecaptchaPlugin = require("puppeteer-extra-plugin-recaptcha");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const vanillaPuppeteer = require("puppeteer");
 const os = require("node:os");
+
 const defaultViewport = {
   height: 1920,
   width: 1280,
@@ -59,7 +60,7 @@ const sellerAmazon = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
+    args: ["--no-sandbox"],
     executablePath: executablePath(),
     userDataDir: "./user_data",
   });
@@ -521,13 +522,6 @@ const sellerAmazon = async function () {
 
     let dateFormat = new Date();
 
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    };
-
     settingSheet.getCell(4, 3).value = dateFormat.toLocaleString("en-US", {
       timeZone: "America/Denver",
     });
@@ -579,7 +573,7 @@ const sellerAmazonCH = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
+    args: ["--no-sandbox"],
     userDataDir: "./user_data_ch",
     executablePath: executablePath(),
   });
@@ -986,7 +980,7 @@ const walmart = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
+    args: ["--no-sandbox"],
     executablePath: executablePath(),
   });
   const page = await browser.newPage();
@@ -1303,7 +1297,7 @@ const commision = async function () {
   puppeteer.use(StealthPlugin());
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
+    args: ["--no-sandbox"],
     executablePath: executablePath(),
     userDataDir: "./user_data",
   });
@@ -1326,7 +1320,7 @@ const commision = async function () {
       await page.waitForTimeout(120000);
     }
     const grabData = async () => {
-      let result = {};
+      let result = [];
       await page.goto(
         "https://scanprint.myshopify.com/admin/orders?inContextTimeframe=last_30_days"
       );
@@ -1341,6 +1335,7 @@ const commision = async function () {
       let business_report = responseJson["data"]["ordersList"]["edges"];
       console.log(business_report);
       for (let i = 0; i < business_report.length; i++) {
+        let order = {};
         let id = business_report[i]["node"]["id"].replace(
           "gid://shopify/Order/",
           ""
@@ -1348,9 +1343,64 @@ const commision = async function () {
         await page.goto(`https://scanprint.myshopify.com/admin/orders/${id}`, {
           waitUntil: "networkidle2",
         });
+        let [subtotal] = await page.$x(
+          '//span[contains(text(),"Subtotal")]//parent::span//following-sibling::div/div/div/div/span'
+        );
+        let sub = await page.evaluate(
+          (element) => (element ? element.textContent : ""),
+          subtotal
+        );
+        let [shipping] = await page.$x(
+          '//span[contains(text(),"Shipping")]//parent::span//following-sibling::div/div/div/div/span'
+        );
+        let ship = await page.evaluate(
+          (element) => (element ? element.textContent : ""),
+          shipping
+        );
+        let [total] = await page.$x(
+          '//span[contains(text(),"Total")]//parent::span//following-sibling::div/div/div/div/span'
+        );
+        let tot = await page.evaluate(
+          (element) => (element ? element.textContent : ""),
+          total
+        );
+        let [refunded] = await page.$x(
+          '//span[contains(text(),"Total")]//parent::span//following-sibling::div/div/div/div/span'
+        );
+        let ref = await page.evaluate(
+          (element) => (element ? element.textContent : ""),
+          refunded
+        );
+        let [net_payment] = await page.$x(
+          '//span[contains(text(),"Net payment")]//parent::span//following-sibling::div/div/div/div/span'
+        );
+        let net = await page.evaluate(
+          (element) => (element ? element.textContent : ""),
+          net_payment
+        );
+        let order_id = await page.$eval("h1", (el) => el.innerText);
+        let [sku_el] = await page.$x('//span[contains(text(),"SKU:")]');
+        let sku = await page.evaluate(
+          (element) => (element ? element.textContent : ""),
+          sku_el
+        );
+        let [date_text] = await page.$x(
+          "//h1//parent::div//parent::div//parent::div//following-sibling::div/div/div/span"
+        );
+        let date_t = await page.evaluate(
+          (element) => (element ? element.textContent : ""),
+          date_text
+        );
+        order["id"] = order_id;
+        order["date"] = date_t;
+        order["subtotal"] = sub;
+        order["shipping"] = ship;
+        order["total"] = tot;
+        order["refund"] = ref;
+        order["net"] = net;
+        order["sku"] = sku;
+        result.push(order);
       }
-
-      result["data"] = business_report;
 
       return result;
     };
@@ -1488,19 +1538,34 @@ const commision = async function () {
   }
 };
 
+const updateProduct = function (site, mpn, price, in_stock) {
+  let dec_price = price
+    ? parseFloat(price.replace("$", "").replace(",", "").trim())
+    : null;
+  const data = {
+    site: site,
+    mpn: mpn.toString(),
+    price: dec_price,
+    in_stock: in_stock,
+  };
+
+  fetch("http://103.49.239.195/update_product", {
+    method: "POST", // or 'PUT'
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Success:", data);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+};
 const bhphotovideo = async function () {
   const start = new Date();
-  const bhphotovideocsvWriter = createCsvWriter({
-    path: "bhphotovideo.csv",
-    header: [
-      { id: "idx", title: "idx" },
-      { id: "source", title: "MPN from Gsheet" },
-      { id: "title", title: "Title" },
-      { id: "price", title: "Price" },
-      { id: "link", title: "Link" },
-    ],
-  });
-
   const doc = new GoogleSpreadsheet(
     "1FJbWE8ObEqcnJK-1QQ1iLzfOeQFPO891CKwUFJK_kUI"
   );
@@ -1509,14 +1574,36 @@ const bhphotovideo = async function () {
   console.log(doc.title);
   let resSheet = doc.sheetsById["1771276982"];
   await resSheet.loadCells("H1:H1500");
+  await resSheet.loadCells("AK1:AK1500");
+
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:H40");
+  settingSheet.getCell(16, 1).value = "";
+  settingSheet.getCell(16, 2).value = "RUNNING";
+  let first = settingSheet.getCell(16, 6).value;
+  let last = settingSheet.getCell(16, 7).value;
+
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
+
   puppeteer.use(StealthPlugin());
   let browser = await puppeteer.launch({
-    headless: false,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
+    headless: true,
+    args: ["--no-sandbox"],
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
-  await page.setViewport(Object.assign({}, defaultViewport));
   let results = [];
   let visited = [];
   try {
@@ -1530,25 +1617,30 @@ const bhphotovideo = async function () {
         let el = document.querySelector("#px-captcha");
         return el ? true : false;
       });
-      if (block) {
+      let [blocked] = await page.$x(
+        '//*[contains(text(),"Before we continue")]'
+      );
+      let h1 = await page.evaluate(() => {
+        let el = document.querySelector("h1");
+        return el ? true : false;
+      });
+      if (block || blocked) {
         await browser.close();
         browser = await puppeteer.launch({
-          headless: false,
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--single-process",
-          ],
+          headless: true,
+          args: ["--no-sandbox"],
           executablePath: executablePath(),
         });
         page = await browser.newPage();
+        await page.setJavaScriptEnabled(true);
+        await page.setDefaultNavigationTimeout(0);
         await page.goto(url, {
           waitUntil: "networkidle2",
         });
         await checkBlock(url);
       }
     };
-    for (let i = 0; i < 1500; i++) {
+    for (let i = first; i < last; i++) {
       let source = resSheet.getCell(4 + i, 7).value;
       if (source && source in visited) {
         let getdata = results.find((e) => {
@@ -1581,9 +1673,15 @@ const bhphotovideo = async function () {
                   .querySelector(
                     'div > div[data-selenium="miniProductPageDescription"] > div[data-selenium="miniProductPageProductSkuInfo"]'
                   )
-                  .innerText.includes(
-                    typeof text == "string" ? text.toUpperCase() : text
+                  .innerText.includes("MFR #") &&
+                tr
+                  .querySelector(
+                    'div > div[data-selenium="miniProductPageDescription"] > div[data-selenium="miniProductPageProductSkuInfo"]'
                   )
+                  .innerText.replace(/(\r\n|\n|\r)/gm, "")
+                  .split("MFR #")[1]
+                  .trim() ==
+                  (typeof text == "string" ? text.trim() : text.toString())
               ) {
                 link = tr
                   .querySelector(
@@ -1602,6 +1700,7 @@ const bhphotovideo = async function () {
         let link1 = "";
         let price = "";
         let h1 = "";
+        let in_stock = "";
         if (products.length > 0) {
           link1 = `https://www.bhphotovideo.com${products[0]}`;
           await page.goto(link1, {
@@ -1612,7 +1711,12 @@ const bhphotovideo = async function () {
             let el = document.querySelector('div[data-selenium="pricingPrice');
             return el ? el.innerText : "";
           });
-
+          in_stock = await page.evaluate(() => {
+            let el = document.querySelector(
+              'span[data-selenium="stockStatus"]'
+            );
+            return el ? el.innerText : "";
+          });
           h1 = await page.evaluate(() => {
             let el = document.querySelector("h1");
             return el ? el.innerText : "";
@@ -1624,33 +1728,92 @@ const bhphotovideo = async function () {
           link: link1,
           title: h1,
           price: price,
+          in_stock: in_stock,
         };
         results.push(data);
+        updateProduct(
+          "B&H",
+          source,
+          price,
+          price ? in_stock == "In Stock" : true
+        );
+        // resSheet.getCell(4 + i, 36).value = price
+        //   ? parseFloat(price.replace("$", "").replace(",", ""))
+        //   : "N/A";
+        // resSheet.getCell(4 + i, 36).backgroundColor = {
+        //   red: 1,
+        //   green: 1,
+        //   blue: 1,
+        //   alpha: 1.0,
+        // };
+        // if (in_stock != "In Stock" && price) {
+        //   resSheet.getCell(4 + i, 36).backgroundColor = {
+        //     red: 0.85,
+        //     green: 0.85,
+        //     blue: 0.85,
+        //     alpha: 1.0,
+        //   };
+        // }
         console.log(data);
-      } else {
-        let data = { idx: i, source: source, link: "", title: "", price: "" };
-        results.push(data);
-        console.log(data);
+      }
+      settingSheet.getCell(16, 6).value = i;
+      if (i % 20 == 0) {
+        await retry(
+          () => Promise.all([settingSheet.saveUpdatedCells()]),
+          5,
+          true,
+          10000
+        );
       }
       visited.push(source);
     }
-    bhphotovideocsvWriter
-      .writeRecords(results)
-      .then(() => console.log("The CSV file was written successfully"));
+    // bhphotovideocsvWriter
+    //   .writeRecords(results)
+    //   .then(() => console.log("The CSV file was written successfully"));
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
-    browser.close();
+    let dateFormat = new Date();
+    settingSheet.getCell(16, 6).value = 0;
+
+    settingSheet.getCell(16, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(16, 2).value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
   } catch (e) {
     console.log(e);
     console.log("bhphotovideo Error");
-    bhphotovideocsvWriter
-      .writeRecords(results)
-      .then(() => console.log("The CSV file was written successfully"));
+    // bhphotovideocsvWriter
+    //   .writeRecords(results)
+    //   .then(() => console.log("The CSV file was written successfully"));
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
-    browser.close();
+
+    let dateFormat = new Date();
+
+    settingSheet.getCell(16, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(16, 2).value = "ERROR";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
+    await new Promise((r) => setTimeout(r, 3000));
+    await bhphotovideo();
   }
 };
 
@@ -1663,29 +1826,37 @@ const adorama = async function () {
   await doc.loadInfo(); // loads document properties and worksheets
   console.log(doc.title);
   let resSheet = doc.sheetsById["1771276982"];
-  await resSheet.loadCells("H1:H833");
-  await resSheet.loadCells("AJ1:AJ833");
+  await resSheet.loadCells("H1:H1500");
+  await resSheet.loadCells("AJ1:AJ1500");
   // Create a custom puppeteer-extra instance using `addExtra`,
   // so we could create additional ones with different plugin config.
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:H40");
+  settingSheet.getCell(15, 1).value = "";
+  settingSheet.getCell(15, 2).value = "RUNNING";
+  let first = settingSheet.getCell(15, 6).value;
+  let last = settingSheet.getCell(15, 7).value;
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
   puppeteer.use(StealthPlugin());
 
   let browser = await puppeteer.launch({
-    ignoreHTTPSErrors: true,
-    headless: false,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--single-process",
-      `--proxy-server=http://${PROXY_SERVER}:${PROXY_SERVER_PORT}`,
-    ],
+    headless: true,
+    args: ["--no-sandbox"],
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
-  await page.authenticate({
-    username: PROXY_USERNAME,
-    password: PROXY_PASSWORD,
-  });
-  await page.setViewport(Object.assign({}, defaultViewport));
   let results = [];
   let visited = [];
   try {
@@ -1694,37 +1865,35 @@ const adorama = async function () {
     await page.goto("https://www.adorama.com/", {
       waitUntil: "networkidle2",
     });
-    // await page.screenshot({
-    //   path: `public/adorama/home.png`,
-    // });
     const checkBlock = async (url) => {
       let block = await page.evaluate(() => {
         let el = document.querySelector("#px-captcha");
         return el ? true : false;
       });
+      let [blocked] = await page.$x(
+        '//*[contains(text(),"Before we continue")]'
+      );
       let h1 = await page.evaluate(() => {
         let el = document.querySelector("h1");
         return el ? true : false;
       });
-      if (h1 && block) {
+      if (block || blocked) {
         await browser.close();
         browser = await puppeteer.launch({
-          headless: false,
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--single-process",
-          ],
+          headless: true,
+          args: ["--no-sandbox"],
           executablePath: executablePath(),
         });
         page = await browser.newPage();
+        await page.setJavaScriptEnabled(true);
+        await page.setDefaultNavigationTimeout(0);
         await page.goto(url, {
           waitUntil: "networkidle2",
         });
         await checkBlock(url);
       }
     };
-    for (let i = 0; i < 833; i++) {
+    for (let i = first; i < last; i++) {
       let source = resSheet.getCell(4 + i, 7).value;
       if (source && source in visited) {
         let getdata = results.find((e) => {
@@ -1737,146 +1906,145 @@ const adorama = async function () {
         continue;
       }
       if (source) {
-        let text = typeof source == "string" ? source.trim() : source;
+        let text =
+          typeof source == "string" ? source.trim() : source.toString();
         await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
           waitUntil: "networkidle2",
         });
-        await page.screenshot({
-          path: `public/adorama/${text}.png`,
-        });
+        // await page.screenshot({
+        //   path: `public/adorama/${text}.png`,
+        // });
         await checkBlock(`https://www.adorama.com/l/?searchinfo=${text}`);
         let [not_found] = await page.$x(
           '//h1[contains(text(),"Sorry, we didn")]'
         );
-        let [not_available] = await page.$x(
-          '//*[contains(text(),"This item is no longer available.")]'
+        let products = await page.$$eval(
+          "#productGridPlaceholder > div > div.item-list.clear.style-is-list > div",
+          (trs, text) => {
+            return trs.map((tr) => {
+              let link = "";
+              if (
+                tr.querySelector(
+                  "div.item-details > p.item-ids > i:nth-child(2)"
+                ) &&
+                tr
+                  .querySelector(
+                    "div.item-details > p.item-ids > i:nth-child(2)"
+                  )
+                  .innerText.includes("MFR:") &&
+                tr
+                  .querySelector(
+                    "div.item-details > p.item-ids > i:nth-child(2)"
+                  )
+                  .innerText.replace(/(\r\n|\n|\r)/gm, "")
+                  .replace("MFR:", "")
+                  .trim() ==
+                  (typeof text == "string" ? text.trim() : text.toString())
+              ) {
+                link = tr.querySelector("a").getAttribute("href");
+              }
+              return link;
+            });
+          },
+          text
         );
+        products = products.filter((link) => {
+          return link != "";
+        });
         let link1 = "";
         let price = "";
         let h1 = "";
-        if (!not_found) {
-          let products = await page.$$eval(
-            "#productGridPlaceholder > div",
-            (trs, text) => {
-              return trs.map((tr) => {
-                let objresult = { name: "", price: "", link: "" };
-                if (
-                  tr.querySelector(
-                    "div > div > div.item-details > p > i:nth-child(2) > span"
-                  ) &&
-                  tr
-                    .querySelector(
-                      "div > div > div.item-details > p > i:nth-child(2) > span"
-                    )
-                    .innerText.includes(
-                      typeof text == "string" ? text.toUpperCase() : text
-                    )
-                ) {
-                  objresult["price"] = tr.querySelector(
-                    "div > div > div.item-actions > div > strong"
-                  )
-                    ? tr.querySelector(
-                        "div > div > div.item-actions > div > strong"
-                      ).innerText
-                    : "";
-                  objresult["name"] = tr.querySelector(
-                    "div > div > div.item-details > h2 > a"
-                  )
-                    ? tr.querySelector("div > div > div.item-details > h2 > a")
-                        .innerText
-                    : "";
-                  objresult["link"] = tr.querySelector(
-                    "div > div > div.item-details > h2 > a"
-                  )
-                    ? tr
-                        .querySelector("div > div > div.item-details > h2 > a")
-                        .getAttribute("href")
-                    : "";
-                }
-                return objresult;
-              });
-            },
-            text
-          );
-          if (products.length > 0) {
-            price = products[0]["price"];
+        let in_stock = "";
+        if (products.length > 0) {
+          link1 = products[0];
+          await page.goto(link1, {
+            waitUntil: "networkidle2",
+          });
+          await checkBlock(link1);
+        }
 
-            h1 = products[0]["name"];
-            link1 = products[0]["link1"];
-            let data = {
-              idx: i,
-              source: source,
-              link: link1,
-              title: h1,
-              price: price,
-            };
-
-            results.push(data);
+        let url = await page.url();
+        if (!not_found && !url.includes("l/?searchinfo=")) {
+          let mpn = await page.evaluate(() => {
+            let el = document.querySelector(
+              "#product-container > section > div.product-info-container.col1 > div.primary-info-sub.clear.cf > div.prod-id > i:nth-child(2) > span"
+            );
+            return el ? el.innerText.replace("-", "") : "";
+          });
+          price = await page.evaluate(() => {
+            let el = document.querySelector("strong.your-price");
+            return el ? el.innerText : "";
+          });
+          in_stock = await page.evaluate(() => {
+            let el = document.querySelector("div.av-stock");
+            return el ? el.innerText : "";
+          });
+          h1 = await page.evaluate(() => {
+            let el = document.querySelector("h1 > span");
+            return el ? el.innerText : "";
+          });
+          link1 = await page.url();
+          let data = {
+            idx: i,
+            source: source,
+            link: link1,
+            title: h1,
+            price: price,
+            in_stock: in_stock,
+          };
+          results.push(data);
+          if (mpn.includes(text.replace("-", ""))) {
             console.log(data);
-            resSheet.getCell(4 + i, 35).value = price
-              ? parseFloat(price.replace("$", "").replace(",", ""))
-              : "N/A";
+            updateProduct(
+              "Adorama",
+              source,
+              price,
+              !in_stock.includes("In Stock") &&
+                !in_stock.includes("Ships from Manufacturer") &&
+                price
+            );
           } else {
-            price = await page.evaluate(() => {
-              let el = document.querySelector("strong.your-price");
-              return el ? el.innerText : "";
-            });
-
-            h1 = await page.evaluate(() => {
-              let el = document.querySelector("h1 > span");
-              return el ? el.innerText : "";
-            });
-            link1 = await page.url();
-            let data = {
-              idx: i,
-              source: source,
-              link: link1,
-              title: h1,
-              price: price,
-            };
-            results.push(data);
-            if (not_available) {
-              resSheet.getCell(4 + i, 35).backgroundColor = {
-                red: 0.85,
-                green: 0.85,
-                blue: 0.85,
-                alpha: 1.0,
-              };
-            }
+            updateProduct("Adorama", source, null, true);
             console.log(data);
-            resSheet.getCell(4 + i, 35).value = price
-              ? parseFloat(price.replace("$", "").replace(",", ""))
-              : "N/A";
           }
         } else {
           let data = { idx: i, source: source, link: "", title: "", price: "" };
           results.push(data);
-          resSheet.getCell(4 + i, 35).value = "N/A";
+          updateProduct("Adorama", source, null, true);
           console.log(data);
         }
       }
       visited.push(source);
+      settingSheet.getCell(15, 6).value = i;
       if (i % 20 == 0) {
         await retry(
-          () => Promise.all([resSheet.saveUpdatedCells()]),
+          () => Promise.all([settingSheet.saveUpdatedCells()]),
           5,
           true,
           10000
         );
       }
     }
-    await retry(
-      () => Promise.all([resSheet.saveUpdatedCells()]),
-      5,
-      true,
-      10000
-    );
     // AdoramacsvWriter.writeRecords(results).then(() =>
     //   console.log("The CSV file was written successfully")
     // );
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
+    let dateFormat = new Date();
+    settingSheet.getCell(15, 6).value = 0;
+    settingSheet.getCell(15, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(15, 2).value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
   } catch (e) {
     console.log(e);
     console.log("Adorama Error");
@@ -1886,22 +2054,27 @@ const adorama = async function () {
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
+    let dateFormat = new Date();
+
+    settingSheet.getCell(15, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(15, 2).value = "ERROR";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
+    await new Promise((r) => setTimeout(r, 3000));
+    await adorama();
   }
 };
 
 const barcodesinc = async function () {
   const start = new Date();
-  const BarcodesinccsvWriter = createCsvWriter({
-    path: "barcodesinc.csv",
-    header: [
-      { id: "idx", title: "idx" },
-      { id: "source", title: "MPN from Gsheet" },
-      { id: "title", title: "Title" },
-      { id: "price", title: "Price" },
-      { id: "link", title: "Link" },
-    ],
-  });
-
   const doc = new GoogleSpreadsheet(
     "1FJbWE8ObEqcnJK-1QQ1iLzfOeQFPO891CKwUFJK_kUI"
   );
@@ -1910,47 +2083,44 @@ const barcodesinc = async function () {
   console.log(doc.title);
   let resSheet = doc.sheetsById["1771276982"];
   await resSheet.loadCells("H1:H1500");
+  await resSheet.loadCells("AH1:AH1500");
+
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:H40");
+  settingSheet.getCell(17, 1).value = "";
+  settingSheet.getCell(17, 2).value = "RUNNING";
+  let first = settingSheet.getCell(17, 6).value;
+  let last = settingSheet.getCell(17, 7).value;
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
   puppeteer.use(StealthPlugin());
   let browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--single-process"],
+    args: ["--no-sandbox"],
     executablePath: executablePath(),
   });
   let page = await browser.newPage();
-  await page.setViewport(Object.assign({}, defaultViewport));
-
   let results = [];
   let visited = [];
   try {
     await page.setJavaScriptEnabled(true);
     await page.setDefaultNavigationTimeout(0);
-    await page.goto("https://www.barcodesinc.com/", {
+    await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
       waitUntil: "networkidle2",
     });
-    const checkBlock = async (url) => {
-      let block = await page.evaluate(() => {
-        let el = document.querySelector("#px-captcha");
-        return el ? true : false;
-      });
-      if (block) {
-        await browser.close();
-        browser = await puppeteer.launch({
-          headless: false,
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--single-process",
-          ],
-          executablePath: executablePath(),
-        });
-        page = await browser.newPage();
-        await page.goto(url, {
-          waitUntil: "networkidle2",
-        });
-        await checkBlock(url);
-      }
-    };
-    for (let i = 0; i < 1500; i++) {
+
+    for (let i = first; i < last; i++) {
       let source = resSheet.getCell(4 + i, 7).value;
       if (source) {
         if (source in visited) {
@@ -1962,23 +2132,90 @@ const barcodesinc = async function () {
           console.log("Already visited");
           console.log(newdata);
         } else {
-          let text = typeof source == "string" ? source.trim() : source;
-          await page.goto(
-            `https://www.barcodesinc.com/search.htm?search=${text}-B615&v=1`,
-            {
-              waitUntil: "networkidle2",
+          let text =
+            typeof source == "string" ? source.trim() : source.toString();
+          const checkBlock = async (input) => {
+            let block = await page.evaluate(() => {
+              let el = document.querySelector("#px-captcha");
+              return el ? true : false;
+            });
+            let [blocked] = await page.$x(
+              '//*[contains(text(),"Before we continue")]'
+            );
+            if (block || blocked) {
+              await browser.close();
+              browser = await puppeteer.launch({
+                headless: false,
+                args: ["--no-sandbox"],
+                executablePath: executablePath(),
+              });
+              page = await browser.newPage();
+              await page.setJavaScriptEnabled(true);
+              await page.setDefaultNavigationTimeout(0);
+              await page.goto(
+                "https://www.barcodesinc.com/search.htm?PA03770-B615",
+                {
+                  waitUntil: "networkidle2",
+                }
+              );
+              await page.waitForSelector(
+                "#global-header > div.search-area > form > input.searchfield"
+              );
+
+              await page.evaluate(
+                () =>
+                  (document.querySelector(
+                    "#global-header > div.search-area > form > input.searchfield"
+                  ).value = "")
+              );
+              await page.type(
+                "#global-header > div.search-area > form > input.searchfield",
+                text
+              );
+              await page.waitForSelector(
+                "#global-header > div.search-area > form > input.searchbutton"
+              );
+
+              await page.click(
+                "#global-header > div.search-area > form > input.searchbutton"
+              );
+
+              await page.waitForNavigation({ waitUntil: "networkidle2" });
+              await checkBlock(input);
             }
+          };
+          await page.waitForSelector(
+            "#global-header > div.search-area > form > input.searchfield"
           );
 
-          await checkBlock(
-            `https://www.barcodesinc.com/search.htm?search=${text}-B615&v=1`
+          await page.evaluate(
+            () =>
+              (document.querySelector(
+                "#global-header > div.search-area > form > input.searchfield"
+              ).value = "")
           );
+          await page.type(
+            "#global-header > div.search-area > form > input.searchfield",
+            text
+          );
+          await page.waitForSelector(
+            "#global-header > div.search-area > form > input.searchbutton"
+          );
+
+          await page.click(
+            "#global-header > div.search-area > form > input.searchbutton"
+          );
+
+          await page.waitForNavigation({ waitUntil: "networkidle2" });
+
+          await checkBlock(text);
           let [not_found] = await page.$x(
             '//p[contains(text(),"We could not find a product to match your search criteria.")]'
           );
           let link1 = "";
           let price = "";
           let h1 = "";
+          let url = await page.url();
           if (!not_found) {
             let products = await page.$$eval(
               "#partstable > tbody > tr",
@@ -1989,9 +2226,9 @@ const barcodesinc = async function () {
                     tr.querySelector("td:nth-child(2) > span.modelname > a") &&
                     tr
                       .querySelector("td:nth-child(2) > span.modelname > a")
-                      .innerText.includes(
-                        typeof text == "string" ? text.toUpperCase() : text
-                      )
+                      .innerText.replace(")", "")
+                      .split("(")[1] ==
+                      (typeof text == "string" ? text.toUpperCase() : text)
                   ) {
                     objresult["price"] = tr.querySelector("td.pricecell > span")
                       ? tr.querySelector("td.pricecell > span").innerText
@@ -2010,24 +2247,42 @@ const barcodesinc = async function () {
                           .querySelector("td:nth-child(2) > span.modelname > a")
                           .getAttribute("href")
                       : "";
+                    objresult["in_stock"] = tr.querySelector(
+                      "td:nth-child(2) > div.search-instock > span.message-instock"
+                    )
+                      ? tr.querySelector(
+                          "td:nth-child(2) > div.search-instock > span.message-instock"
+                        ).innerText
+                      : "";
                   }
                   return objresult;
                 });
               },
               text
             );
+            products = products.filter((p) => {
+              return p["price"] != "";
+            });
             if (products.length > 0) {
               price = products[0]["price"];
-
               h1 = products[0]["name"];
-              link1 = products[0]["link1"];
+              link1 = products[0]["link"];
+              in_stock = products[0]["in_stock"];
               let data = {
                 idx: i,
                 source: source,
                 link: link1,
                 title: h1,
                 price: price,
+                in_stock: in_stock,
               };
+
+              updateProduct(
+                "Barcodes Inc",
+                source,
+                price,
+                in_stock != "In Stock" && price
+              );
               results.push(data);
               console.log(data);
             } else {
@@ -2037,21 +2292,36 @@ const barcodesinc = async function () {
                 );
                 return el ? el.innerText : "";
               });
-
+              in_stock = await page.evaluate(() => {
+                let el = document.querySelector("div.instock");
+                return el ? el.innerText : "";
+              });
               h1 = await page.evaluate(() => {
                 let el = document.querySelector("h1");
                 return el ? el.innerText : "";
               });
-              link1 = await page.url();
               let data = {
                 idx: i,
                 source: source,
-                link: link1,
+                link: url,
                 title: h1,
                 price: price,
+                in_stock: in_stock,
               };
-              results.push(data);
-              console.log(data);
+              if (h1.includes(text) && price) {
+                link1 = await page.url();
+                updateProduct(
+                  "Barcodes Inc",
+                  source,
+                  price,
+                  in_stock != "In Stock" && price
+                );
+                results.push(data);
+                console.log(data);
+              } else {
+                updateProduct("Barcodes Inc", source, null, true);
+                console.log(data);
+              }
             }
           } else {
             let data = {
@@ -2061,28 +2331,60 @@ const barcodesinc = async function () {
               title: "",
               price: "",
             };
+            updateProduct("Barcodes Inc", source, null, true);
             results.push(data);
             console.log(data);
           }
         }
       }
+      settingSheet.getCell(17, 6).value = i;
+      await retry(
+        () => Promise.all([settingSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
       visited.push(source);
     }
-    BarcodesinccsvWriter.writeRecords(results).then(() =>
-      console.log("The CSV file was written successfully")
-    );
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
+    let dateFormat = new Date();
+    settingSheet.getCell(17, 6).value = 0;
+    settingSheet.getCell(17, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(17, 2).value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
   } catch (e) {
     console.log(e);
     console.log("Barcodesinc Error");
-    BarcodesinccsvWriter.writeRecords(results).then(() =>
-      console.log("The CSV file was written successfully")
-    );
     const end = new Date();
     console.log("start: ", start);
     console.log("end: ", end);
+    let dateFormat = new Date();
+
+    settingSheet.getCell(17, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(17, 2).value = "ERROR";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
+    await new Promise((r) => setTimeout(r, 3000));
+    await barcodesinc();
   }
 };
 module.exports = {
