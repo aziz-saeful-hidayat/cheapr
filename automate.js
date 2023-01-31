@@ -2615,6 +2615,14 @@ const allnew = async function () {
       let source = resSheet.getCellByA1(`H${i}`).value;
       let price = resSheet.getCellByA1(`AG${i}`).value;
       if (source && !price) {
+        let message = `Crawling New MPN: ${source} on Row ${i}`;
+        resSheet.getCellByA1(`AG2`).value = message;
+        await retry(
+          () => Promise.all([resSheet.saveUpdatedCells()]),
+          5,
+          true,
+          10000
+        );
         let page = await browser.newPage();
         await page.authenticate({
           username: "cheapr",
@@ -2624,7 +2632,7 @@ const allnew = async function () {
           waitUntil: "networkidle2",
         });
         console.log("==========================");
-        console.log("Working on Row", i, source);
+        console.log(message);
         console.log("==========================");
 
         let data = await get_adorama(page, source);
@@ -2735,6 +2743,7 @@ const allnew = async function () {
                 blue: 1,
                 alpha: 1,
               };
+        resSheet.getCellByA1(`AG2`).value = "";
         await retry(
           () => Promise.all([resSheet.saveUpdatedCells()]),
           5,
