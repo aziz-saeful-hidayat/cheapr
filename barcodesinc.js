@@ -6,8 +6,8 @@ const axios = require("axios");
 const { updateProduct } = require("./utils");
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
-  args: ["--no-sandbox"],
+  headless: false,
+  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
 };
 
@@ -49,6 +49,7 @@ const barcodesinc = async () => {
       }
     };
     page.setDefaultTimeout(0);
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
       waitUntil: "networkidle2",
     });

@@ -22,11 +22,10 @@ const allnewcluster = async () => {
   await doc.loadInfo();
   console.log(doc.title);
   const resSheet = doc.sheetsById["1771276982"];
-  
 
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 1,
+    maxConcurrency: 10,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
@@ -44,7 +43,8 @@ const allnewcluster = async () => {
     }
   });
   // We don't define a task and instead use own functions
-  const get_bhphotovideo = async function ({ page, data: { source, idx } }) {
+  const get_bhphotovideo = async function ({ page, data: obj }) {
+    const { source: source, idx: idx, resSheet: resSheet } = obj;
     if (source) {
       let text = typeof source == "string" ? source.trim() : source;
       await page.goto(
@@ -119,19 +119,46 @@ const allnewcluster = async () => {
       if (price) {
         in_stock = in_stock == "In Stock";
         data["in_stock"] = in_stock;
-        resSheet.getCell(idx, 36).value() = price
-        resSheet.getCell(idx, 36).backgroundColor = {red: 0.81, green: 0.81, blue: 0.81, alpha: 1}
+        console.log(data);
+        resSheet.getCell(idx, 36).value = price;
+        // resSheet.getCell(idx, 36).backgroundColor = {
+        //   red: 0.81,
+        //   green: 0.81,
+        //   blue: 0.81,
+        //   alpha: 1,
+        // };
         // return data;
       } else {
-        resSheet.getCell(idx, 36).value() = 'N/A'
-        resSheet.getCell(idx, 36).backgroundColor = {red: 1, green: 1, blue: 1, alpha: 1}
+        console.log(data);
+
+        resSheet.getCell(idx, 36).value = "N/A";
+        // resSheet.getCell(idx, 36).backgroundColor = {
+        //   red: 1,
+        //   green: 1,
+        //   blue: 1,
+        //   alpha: 1,
+        // };
       }
     } else {
-        resSheet.getCell(idx, 36).value() = ''
-        resSheet.getCell(idx, 36).backgroundColor = {red: 1, green: 1, blue: 1, alpha: 1}
+      console.log(null);
+
+      resSheet.getCell(idx, 36).value = "";
+      // resSheet.getCell(idx, 36).backgroundColor = {
+      //   red: 1,
+      //   green: 1,
+      //   blue: 1,
+      //   alpha: 1,
+      // };
     }
+    await retry(
+      () => Promise.all([resSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
   };
-  const get_adorama = async function ({ page, data: { source, idx } }) {
+  const get_adorama = async function ({ page, data: obj }) {
+    const { source: source, idx: idx } = obj;
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
@@ -214,22 +241,51 @@ const allnewcluster = async () => {
           : true;
         if (mpn.includes(text.replace("-", ""))) {
           console.log(data);
-          resSheet.getCell(idx, 34).value() = price
-          resSheet.getCell(idx, 34).backgroundColor = {red: 0.81, green: 0.81, blue: 0.81, alpha: 1}
+          resSheet.getCell(idx, 34).value = price;
+          // resSheet.getCell(idx, 34).backgroundColor = {
+          //   red: 0.81,
+          //   green: 0.81,
+          //   blue: 0.81,
+          //   alpha: 1,
+          // };
         } else {
-        resSheet.getCell(idx, 34).value() = "N/A"
-        resSheet.getCell(idx, 34).backgroundColor = {red: 1, green: 1, blue: 1, alpha: 1}
+          resSheet.getCell(idx, 34).value = "N/A";
+          resSheet.getCell(idx, 34).backgroundColor = {
+            red: 1,
+            green: 1,
+            blue: 1,
+            alpha: 1,
+          };
         }
       } else {
-        resSheet.getCell(idx, 34).value() = "N/A"
-        resSheet.getCell(idx, 34).backgroundColor = {red: 1, green: 1, blue: 1, alpha: 1}
+        resSheet.getCell(idx, 34).value = "N/A";
+        resSheet.getCell(idx, 34).backgroundColor = {
+          red: 1,
+          green: 1,
+          blue: 1,
+          alpha: 1,
+        };
       }
     } else {
-        resSheet.getCell(idx, 34).value() = ""
-        resSheet.getCell(idx, 34).backgroundColor = {red: 1, green: 1, blue: 1, alpha: 1}
+      resSheet.getCell(idx, 34).value = "";
+      resSheet.getCell(idx, 34).backgroundColor = {
+        red: 1,
+        green: 1,
+        blue: 1,
+        alpha: 1,
+      };
     }
+    await retry(
+      () => Promise.all([resSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
   };
-  const get_barcodesinc = async function ({ page, data: { source, idx } }) {
+  const get_barcodesinc = async function ({
+    page,
+    data: { source: source, idx: idx },
+  }) {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
@@ -365,7 +421,10 @@ const allnewcluster = async () => {
       return null;
     }
   };
-  const get_provantage = async function ({ page, data: { source, idx } }) {
+  const get_provantage = async function ({
+    page,
+    data: { source: source, idx: idx },
+  }) {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.provantage.com/", {
@@ -474,7 +533,10 @@ const allnewcluster = async () => {
       return null;
     }
   };
-  const get_cdw = async function ({ page, data: { source, idx } }) {
+  const get_cdw = async function ({
+    page,
+    data: { source: source, idx: idx },
+  }) {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.cdw.com/", {
@@ -543,7 +605,10 @@ const allnewcluster = async () => {
       return null;
     }
   };
-  const get_radwell = async function ({ page, data: { source, idx } }) {
+  const get_radwell = async function ({
+    page,
+    data: { source: source, idx: idx },
+  }) {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.radwell.com/en-US/Search/?q=${text}`, {
@@ -639,30 +704,41 @@ const allnewcluster = async () => {
   };
 
   const get_new_mpn = async function () {
-    let rowCount = resSheet.rowCount
-    console.log(rowCount)
-    await resSheet.loadCells(`H1:AL${rowCount}`);
-    await resSheet.loadCells(`AG1:AL${rowCount}`);
-    for (let i = 1; i < rowCount; i++) {
-      let source = resSheet.getCellByA1(`H${i}`).value
-      let price = resSheet.getCellByA1(`AG${i}`).value
-      if(source && price != ''){
-        console.log(source)
+    let rowCount = resSheet.rowCount;
+    console.log(rowCount);
+    let start = 459;
+    let end = 460;
+    await resSheet.loadCells(`H${start}:H${end}`);
+    await resSheet.loadCells(`AG${start}:AL${end}`);
+    for (let i = start; i < end; i++) {
+      let source = resSheet.getCellByA1(`H${i}`).value;
+      let price = resSheet.getCellByA1(`AG${i}`).value;
+      console.log(source, price);
+      if (source && !price) {
+        cluster.queue(
+          { source: source, idx: i, resSheet: resSheet },
+          get_bhphotovideo
+        );
+        // cluster.queue({ source: source, idx: i }, get_adorama);
+        // cluster.queue({source: source, idx: i}, get_barcodesinc)
+        // cluster.queue({source: source, idx: i}, get_cdw)
+        // cluster.queue({source: source, idx: i}, get_provantage)
+        // cluster.queue({source: source, idx: i}, get_radwell)
       }
     }
-    console.log("Completed")
-  }
+    console.log("Completed");
+  };
   function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
-  
+
   async function loop() {
     while (true) {
-      await get_new_mpn()  
-      await delay(10 * 1000)
+      await get_new_mpn();
+      await delay(100 * 1000);
     }
   }
-  loop()
+  await loop();
   // many more pages
 
   await cluster.idle();

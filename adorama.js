@@ -6,8 +6,8 @@ const axios = require("axios");
 const { updateProduct } = require("./utils");
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
-  args: ["--no-sandbox"],
+  headless: false,
+  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
 };
 
@@ -47,6 +47,8 @@ const adorama = async () => {
         throw new Error("Blocked");
       }
     };
+    page.setDefaultTimeout(0);
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
       waitUntil: "networkidle2",
