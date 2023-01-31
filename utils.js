@@ -24,6 +24,19 @@ async function retry(promiseFactory, retryCount, first, delay) {
     return await retry(promiseFactory, retryCount - 1, false, delay);
   }
 }
+
+const updateDataProduct = function (site, data) {
+  if (data) {
+    updateProduct(
+      site,
+      data["source"],
+      data["price"],
+      data["in_stock"],
+      data["title"],
+      data["link"]
+    );
+  }
+};
 const updateProduct = function (site, mpn, price, in_stock, title, url) {
   let dec_price = price
     ? parseFloat(price.replace("$", "").replace(",", "").trim())
@@ -53,6 +66,7 @@ const updateProduct = function (site, mpn, price, in_stock, title, url) {
 
 module.exports = {
   updateProduct,
+  updateDataProduct,
   retry,
   sleep,
 };
