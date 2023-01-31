@@ -2521,9 +2521,15 @@ const get_radwell = async function (page, source) {
     return null;
   }
 };
-const allnew = async function (mpn, row) {
+const allnew = async function () {
   puppeteer.use(StealthPlugin());
-
+  const doc = new GoogleSpreadsheet(
+    "1FJbWE8ObEqcnJK-1QQ1iLzfOeQFPO891CKwUFJK_kUI"
+  );
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo();
+  console.log(doc.title);
+  const resSheet = doc.sheetsById["1771276982"];
   let browser = await puppeteer.launch({
     headless: false,
     args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
@@ -2534,18 +2540,32 @@ const allnew = async function (mpn, row) {
   await page.goto("https://www.google.com/", {
     waitUntil: "networkidle2",
   });
-  // let data = await get_adorama(page, mpn);
-  // console.log("Adorama", data);
-  // let data2 = await get_bhphotovideo(page, mpn);
-  // console.log("B&H", data2);
-  // let data3 = await get_barcodesinc(page, mpn);
-  // console.log("Barcodes Inc", data3);
-  // let data4 = await get_provantage(page, mpn);
-  // console.log("Provantage", data4);
-  // let data5 = await get_cdw(page, mpn);
-  // console.log("CDW", data5);
-  let data6 = await get_radwell(page, mpn);
-  console.log("Radwell", data6);
+  let rowCount = resSheet.rowCount;
+  console.log(rowCount);
+  let start = 459;
+  let end = 460;
+  await resSheet.loadCells(`H${start}:H${end}`);
+  await resSheet.loadCells(`AG${start}:AL${end}`);
+  for (let i = start; i < end; i++) {
+    let source = resSheet.getCellByA1(`H${i}`).value;
+    let price = resSheet.getCellByA1(`AG${i}`).value;
+    console.log(source, price);
+    if (source && !price) {
+      let data = await get_adorama(page, source);
+      console.log("Adorama", data);
+      let data2 = await get_bhphotovideo(page, source);
+      console.log("B&H", data2);
+      let data3 = await get_barcodesinc(page, source);
+      console.log("Barcodes Inc", data3);
+      let data4 = await get_provantage(page, source);
+      console.log("Provantage", data4);
+      let data5 = await get_cdw(page, source);
+      console.log("CDW", data5);
+      let data6 = await get_radwell(page, source);
+      console.log("Radwell", data6);
+    }
+  }
+  console.log("Completed");
   await browser.close();
 };
 module.exports = {

@@ -53,10 +53,9 @@ app.get("/barcodesinc/", function (req, res) {
 });
 
 // Route to return all araticles with a given tag
-app.get("/all/:mpn", async function (req, res) {
+app.get("/all/", function (req, res) {
   // Retrieve the tag from our URL path
-  let mpn = req.params.mpn;
-  allnew(mpn, 12);
+  allnew();
   res.send({ message: "Ok" });
 });
 
