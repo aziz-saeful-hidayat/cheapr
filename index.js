@@ -1,29 +1,12 @@
 const express = require("express"); // Adding Express
 var path = require("path");
-const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the file saved above
-const { GoogleSpreadsheet } = require("google-spreadsheet");
-const jsdom = require("jsdom");
-const axios = require("axios");
 const cors = require("cors");
-const puppeteer = require("puppeteer-extra");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const randomUseragent = require("random-useragent");
-const proxyChain = require("proxy-chain");
-const csvParser = require("csv-parser");
-const needle = require("needle");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
-const fs = require("fs");
-const {
-  sellerAmazon,
-  walmart,
-  sellerAmazonCH,
-  bhphotovideo,
-  adorama,
-  barcodesinc,
-  commision,
-} = require("./automate");
-const { checkip, checkdomain, checkMX } = require("./utils");
-const { binance } = require("./scripts/binance");
+const { sellerAmazon, walmart, commision, allnew } = require("./automate");
+const { adorama } = require("./adorama");
+const { barcodesinc } = require("./barcodesinc");
+const { bhphotovideo } = require("./bhphotovideo");
+const { allnewcluster } = require("./allnewcluster");
 
 const app = express(); // Initializing Express
 
@@ -43,11 +26,6 @@ app.get("/amazon/", function (req, res) {
   sellerAmazon();
   res.send({ result: "Amazon Automation started" });
 });
-
-// app.get("/amazon_ch/", function (req, res) {
-//   sellerAmazonCH();
-//   res.send({ result: "Amazon CH Automation started" });
-// });
 
 app.get("/walmart/", function (req, res) {
   walmart();
@@ -73,7 +51,21 @@ app.get("/barcodesinc/", function (req, res) {
   barcodesinc();
   res.send({ result: "barcodesinc Automation started" });
 });
-// Making Express listen on port 7000
+
+// Route to return all araticles with a given tag
+app.get("/all/:mpn", async function (req, res) {
+  // Retrieve the tag from our URL path
+  let mpn = req.params.mpn;
+  allnew(mpn, 12);
+  res.send({ message: "Ok" });
+});
+
+app.get("/allnewcluster/", async function (req, res) {
+  // Retrieve the tag from our URL path
+  allnewcluster();
+  res.send({ message: "Ok" });
+});
+// Making Express listen on port 3000
 app.listen(process.env.PORT || 3000, function () {
   console.log(`Running on port 3000.`);
 });
