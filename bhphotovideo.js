@@ -7,7 +7,7 @@ const { updateProduct } = require("./utils");
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: ["--no-sandbox"],
+  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
 };
 
@@ -49,6 +49,8 @@ const bhphotovideo = async () => {
       }
     };
     page.setDefaultTimeout(0);
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+
     let text = typeof source == "string" ? source.trim() : source;
     await page.goto(`https://www.bhphotovideo.com/`, {
       waitUntil: "networkidle2",
