@@ -640,12 +640,13 @@ const allnewcluster = async () => {
 
   const get_new_mpn = async function () {
     let rowCount = resSheet.rowCount
+    console.log(rowCount)
     await resSheet.loadCells(`H1:AL${rowCount}`);
     await resSheet.loadCells(`AG1:AL${rowCount}`);
-    for (let i = 0; i < rowCount; i++) {
-      let source = resSheet.getCellByA1(`H${i}`)
-      let price = resSheet.getCellByA1(`AG${i}`)
-      if(source && !price){
+    for (let i = 1; i < rowCount; i++) {
+      let source = resSheet.getCellByA1(`H${i}`).value
+      let price = resSheet.getCellByA1(`AG${i}`).value
+      if(source && price != ''){
         console.log(source)
       }
     }
