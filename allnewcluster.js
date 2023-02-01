@@ -719,11 +719,8 @@ const allnewcluster = async () => {
           { source: source, idx: i, resSheet: resSheet },
           get_bhphotovideo
         );
-        // cluster.queue({ source: source, idx: i }, get_adorama);
-        // cluster.queue({source: source, idx: i}, get_barcodesinc)
-        // cluster.queue({source: source, idx: i}, get_cdw)
-        // cluster.queue({source: source, idx: i}, get_provantage)
-        // cluster.queue({source: source, idx: i}, get_radwell)
+        cluster.queue({ source: source, idx: i }, get_adorama);
+        cluster.queue({ source: source, idx: i }, get_barcodesinc);
       }
     }
     console.log("Completed");

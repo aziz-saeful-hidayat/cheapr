@@ -2291,29 +2291,32 @@ const get_provantage = async function (page, source) {
   try {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
-      await page.goto("https://www.provantage.com/", {
-        waitUntil: "networkidle2",
-      });
-
-      await page.evaluate(
-        () =>
-          (document.querySelector(
-            "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(2) > input[type=text]"
-          ).value = "")
-      );
-      await page.type(
-        "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(2) > input[type=text]",
-        text
-      );
-      await page.waitForSelector(
-        "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(3) > input[type=image]"
+      await page.goto(
+        `https://www.provantage.com/service/searchsvcs?QUERY=${source}&SUBMIT.x=21&SUBMIT.y=23`,
+        {
+          waitUntil: "networkidle2",
+        }
       );
 
-      await page.click(
-        "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(3) > input[type=image]"
-      );
+      // await page.evaluate(
+      //   () =>
+      //     (document.querySelector(
+      //       "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(2) > input[type=text]"
+      //     ).value = "")
+      // );
+      // await page.type(
+      //   "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(2) > input[type=text]",
+      //   text
+      // );
+      // await page.waitForSelector(
+      //   "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(3) > input[type=image]"
+      // );
 
-      await page.waitForNavigation({ waitUntil: "networkidle2" });
+      // await page.click(
+      //   "#TOP2 > tbody > tr > td.TOP > div.LEFT > div:nth-child(3) > input[type=image]"
+      // );
+
+      // await page.waitForNavigation({ waitUntil: "networkidle2" });
 
       let [not_found] = await page.$x(
         '//h3[contains(text(),"Sorry, No Products Were Found Matching Your Query")]'
@@ -2593,7 +2596,7 @@ const get_radwell = async function (page, source) {
 const allnew = async function () {
   puppeteer.use(StealthPlugin());
   let browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
     executablePath: executablePath(),
   });
@@ -2616,6 +2619,16 @@ const allnew = async function () {
       let price = resSheet.getCellByA1(`AG${i}`).value;
       if (source && !price) {
         let message = `Crawling New MPN: ${source} on Row ${i}`;
+        let response = await axios.post(
+          "http://103.49.239.195/get_data",
+          { mpn: source },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        let jsonData = await response.data;
         resSheet.getCellByA1(`AG2`).value = message;
         await retry(
           () => Promise.all([resSheet.saveUpdatedCells()]),
