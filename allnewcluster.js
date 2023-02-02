@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath } = require("puppeteer");
 const axios = require("axios");
-const { updateProduct } = require("./utils");
+const { updateProduct, updateDataProduct } = require("./utils");
 const path = require("path");
 const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the file saved above
 const { GoogleSpreadsheet } = require("google-spreadsheet");
@@ -90,7 +90,7 @@ const allnewcluster = async () => {
       let link1 = "";
       let price = "";
       let h1 = "";
-      let in_stock = "";
+      let in_stock = true;
       if (products.length > 0) {
         link1 = `https://www.bhphotovideo.com${products[0]}`;
         await page.goto(link1, {
@@ -109,6 +109,13 @@ const allnewcluster = async () => {
           return el ? el.innerText : "";
         });
       }
+      let empty_data = {
+        source: source,
+        link: link1,
+        title: h1,
+        price: price,
+        in_stock: in_stock,
+      };
       let data = {
         source: source,
         link: link1,
@@ -120,35 +127,11 @@ const allnewcluster = async () => {
         in_stock = in_stock == "In Stock";
         data["in_stock"] = in_stock;
         console.log(data);
-        resSheet.getCell(idx, 36).value = price;
-        // resSheet.getCell(idx, 36).backgroundColor = {
-        //   red: 0.81,
-        //   green: 0.81,
-        //   blue: 0.81,
-        //   alpha: 1,
-        // };
-        // return data;
+        updateDataProduct("B&H", data);
       } else {
-        console.log(data);
-
-        resSheet.getCell(idx, 36).value = "N/A";
-        // resSheet.getCell(idx, 36).backgroundColor = {
-        //   red: 1,
-        //   green: 1,
-        //   blue: 1,
-        //   alpha: 1,
-        // };
+        console.log(empty_data);
+        updateDataProduct("B&H", empty_data);
       }
-    } else {
-      console.log(null);
-
-      resSheet.getCell(idx, 36).value = "";
-      // resSheet.getCell(idx, 36).backgroundColor = {
-      //   red: 1,
-      //   green: 1,
-      //   blue: 1,
-      //   alpha: 1,
-      // };
     }
     await retry(
       () => Promise.all([resSheet.saveUpdatedCells()]),
@@ -158,7 +141,7 @@ const allnewcluster = async () => {
     );
   };
   const get_adorama = async function ({ page, data: obj }) {
-    const { source: source, idx: idx } = obj;
+    const { source: source, idx: idx, resSheet: resSheet } = obj;
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
@@ -199,14 +182,27 @@ const allnewcluster = async () => {
       let link1 = "";
       let price = "";
       let h1 = "";
-      let in_stock = "";
+      let in_stock = true;
       if (products.length > 0) {
         link1 = products[0];
         await page.goto(link1, {
           waitUntil: "networkidle2",
         });
       }
-
+      let empty_data = {
+        source: source,
+        link: link1,
+        title: h1,
+        price: price,
+        in_stock: in_stock,
+      };
+      let data = {
+        source: source,
+        link: link1,
+        title: h1,
+        price: price,
+        in_stock: in_stock,
+      };
       let url = await page.url();
       if (!not_found && !url.includes("l/?searchinfo=")) {
         let mpn = await page.evaluate(() => {
@@ -228,52 +224,28 @@ const allnewcluster = async () => {
           return el ? el.innerText : "";
         });
         link1 = await page.url();
-        let data = {
+        in_stock = price
+          ? in_stock.includes("In Stock") &&
+            in_stock.includes("Ships from Manufacturer")
+          : true;
+        data = {
           source: source,
           link: link1,
           title: h1,
           price: price,
           in_stock: in_stock,
         };
-        in_stock = price
-          ? in_stock.includes("In Stock") &&
-            in_stock.includes("Ships from Manufacturer")
-          : true;
         if (mpn.includes(text.replace("-", ""))) {
           console.log(data);
-          resSheet.getCell(idx, 34).value = price;
-          // resSheet.getCell(idx, 34).backgroundColor = {
-          //   red: 0.81,
-          //   green: 0.81,
-          //   blue: 0.81,
-          //   alpha: 1,
-          // };
+          updateDataProduct("Adorama", data);
         } else {
-          resSheet.getCell(idx, 34).value = "N/A";
-          resSheet.getCell(idx, 34).backgroundColor = {
-            red: 1,
-            green: 1,
-            blue: 1,
-            alpha: 1,
-          };
+          console.log(empty_data);
+          updateDataProduct("Adorama", empty_data);
         }
       } else {
-        resSheet.getCell(idx, 34).value = "N/A";
-        resSheet.getCell(idx, 34).backgroundColor = {
-          red: 1,
-          green: 1,
-          blue: 1,
-          alpha: 1,
-        };
+        console.log(empty_data);
+        updateDataProduct("Adorama", empty_data);
       }
-    } else {
-      resSheet.getCell(idx, 34).value = "";
-      resSheet.getCell(idx, 34).backgroundColor = {
-        red: 1,
-        green: 1,
-        blue: 1,
-        alpha: 1,
-      };
     }
     await retry(
       () => Promise.all([resSheet.saveUpdatedCells()]),
@@ -282,10 +254,8 @@ const allnewcluster = async () => {
       10000
     );
   };
-  const get_barcodesinc = async function ({
-    page,
-    data: { source: source, idx: idx },
-  }) {
+  const get_barcodesinc = async function ({ page, data: obj }) {
+    const { source: source, idx: idx, resSheet: resSheet } = obj;
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
@@ -321,7 +291,21 @@ const allnewcluster = async () => {
       let link1 = "";
       let price = "";
       let h1 = "";
-      let url = await page.url();
+      let in_stock = true;
+      let empty_data = {
+        source: source,
+        link: link1,
+        title: h1,
+        price: price,
+        in_stock: in_stock,
+      };
+      let data = {
+        source: source,
+        link: link1,
+        title: h1,
+        price: price,
+        in_stock: in_stock,
+      };
       if (!not_found) {
         let products = await page.$$eval(
           "#partstable > tbody > tr",
@@ -372,17 +356,17 @@ const allnewcluster = async () => {
           price = products[0]["price"];
           h1 = products[0]["name"];
           link1 = products[0]["link"];
-          in_stock = products[0]["in_stock"];
-          let data = {
+          stock = products[0]["in_stock"];
+          in_stock = price ? stock == "In Stock" : true;
+          data = {
             source: source,
             link: link1,
             title: h1,
             price: price,
             in_stock: in_stock,
           };
-          in_stock = price ? in_stock == "In Stock" : true;
-          data["in_stock"] = in_stock;
-          return data;
+          console.log(data);
+          updateDataProduct("Adorama", data);
         } else {
           price = await page.evaluate(() => {
             let el = document.querySelector(
@@ -390,7 +374,7 @@ const allnewcluster = async () => {
             );
             return el ? el.innerText : "";
           });
-          in_stock = await page.evaluate(() => {
+          stock = await page.evaluate(() => {
             let el = document.querySelector("div.instock");
             return el ? el.innerText : "";
           });
@@ -399,23 +383,25 @@ const allnewcluster = async () => {
             return el ? el.innerText : "";
           });
           link1 = await page.url();
-          let data = {
+          in_stock = price ? stock == "In Stock" : true;
+          data = {
             source: source,
             link: link1,
             title: h1,
             price: price,
             in_stock: in_stock,
           };
-          in_stock = price ? in_stock == "In Stock" : true;
-          data["in_stock"] = in_stock;
           if (h1.includes(text) && price) {
-            return data;
+            console.log(data);
+            updateDataProduct("Adorama", data);
           } else {
-            return null;
+            console.log(empty_data);
+            updateDataProduct("Adorama", empty_data);
           }
         }
       } else {
-        return null;
+        console.log(empty_data);
+        updateDataProduct("Adorama", empty_data);
       }
     } else {
       return null;
@@ -729,12 +715,31 @@ const allnewcluster = async () => {
       let price = resSheet.getCellByA1(`AH${i}`).value;
       console.log(source, price);
       if (source && !exclude.includes(source) && !price) {
-        cluster.queue(
-          { source: source, idx: i, resSheet: resSheet },
-          get_bhphotovideo
+        let pd_data = await axios.post(
+          "http://103.49.239.195/get_data",
+          { mpn: source },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
-        cluster.queue({ source: source, idx: i }, get_adorama);
-        cluster.queue({ source: source, idx: i }, get_barcodesinc);
+        let pdData = await pd_data.data;
+        let bhp_data = pdData.find((element) => element["site"] == 5);
+        let ado_data = pdData.find((element) => element["site"] == 4);
+        let bar_data = pdData.find((element) => element["site"] == 2);
+        if (!bhp_data) {
+          cluster.queue(
+            { source: source, idx: i, resSheet: resSheet },
+            get_bhphotovideo
+          );
+        }
+        if (!ado_data) {
+          cluster.queue({ source: source, idx: i }, get_adorama);
+        }
+        if (!bar_data) {
+          cluster.queue({ source: source, idx: i }, get_barcodesinc);
+        }
       }
     }
     console.log("Completed");
