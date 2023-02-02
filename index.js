@@ -1,4 +1,6 @@
 const express = require("express"); // Adding Express
+const bodyParser = require("body-parser");
+
 var path = require("path");
 const cors = require("cors");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
@@ -9,6 +11,9 @@ const { bhphotovideo } = require("./bhphotovideo");
 const { allnewcluster } = require("./allnewcluster");
 
 const app = express(); // Initializing Express
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.raw());
 
 const csvFTCWriter = createCsvWriter({
   path: "out.csv",
@@ -59,9 +64,9 @@ app.get("/all/", function (req, res) {
   res.send({ message: "Ok" });
 });
 
-app.get("/allnewcluster/", async function (req, res) {
-  // Retrieve the tag from our URL path
-  allnewcluster();
+app.post("/allnewcluster/", (req, res) => {
+  console.log("Got body:", req.body);
+  allnewcluster(req.body);
   res.send({ message: "Ok" });
 });
 // Making Express listen on port 3000
