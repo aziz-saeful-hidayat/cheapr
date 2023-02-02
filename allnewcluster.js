@@ -720,8 +720,8 @@ const allnewcluster = async () => {
     }
     let rowCount = resSheet.rowCount;
     console.log(rowCount);
-    let start = 459;
-    let end = 460;
+    let start = 3;
+    let end = resSheet.rowCount;
     await resSheet.loadCells(`H${start}:H${end}`);
     await resSheet.loadCells(`AH${start}:AH${end}`);
     for (let i = start; i < end; i++) {
