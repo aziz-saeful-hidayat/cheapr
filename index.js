@@ -66,7 +66,7 @@ app.get("/all/", function (req, res) {
 
 app.post("/allnewcluster/", (req, res) => {
   console.log("Got body:", req.body);
-  allnewcluster(req.body);
+  allnewcluster(req.body.data);
   res.send({ message: "Ok" });
 });
 // Making Express listen on port 3000
