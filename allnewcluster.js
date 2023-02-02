@@ -746,7 +746,7 @@ const allnewcluster = async () => {
   async function loop() {
     while (true) {
       await get_new_mpn();
-      await delay(100 * 1000);
+      await delay(10 * 1000);
     }
   }
   await loop();
