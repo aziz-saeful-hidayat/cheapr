@@ -385,7 +385,7 @@ const allnewcluster = async (mpns) => {
     }
   };
   for (let m = 0; m < mpns.length; module++) {
-    let source = mpns[e];
+    let source = mpns[m];
     if (source) {
       cluster.queue(source, get_bhphotovideo);
       cluster.queue(source, get_adorama);
