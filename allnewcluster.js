@@ -704,17 +704,31 @@ const allnewcluster = async () => {
   };
 
   const get_new_mpn = async function () {
+    let response = await axios.get(
+      "http://103.49.239.195/product/?mpn=&make=&model=&url=&exc=true",
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    let exclude = [];
+    let jsonData = await response.data;
+    for (let e = 0; e < jsonData.length; e++) {
+      let obj = jsonData[e];
+      exclude.push(obj["mpn"]);
+    }
     let rowCount = resSheet.rowCount;
     console.log(rowCount);
     let start = 459;
     let end = 460;
     await resSheet.loadCells(`H${start}:H${end}`);
-    await resSheet.loadCells(`AG${start}:AL${end}`);
+    await resSheet.loadCells(`AH${start}:AH${end}`);
     for (let i = start; i < end; i++) {
       let source = resSheet.getCellByA1(`H${i}`).value;
-      let price = resSheet.getCellByA1(`AG${i}`).value;
+      let price = resSheet.getCellByA1(`AH${i}`).value;
       console.log(source, price);
-      if (source && !price) {
+      if (source && !exclude.includes(source) && !price) {
         cluster.queue(
           { source: source, idx: i, resSheet: resSheet },
           get_bhphotovideo
