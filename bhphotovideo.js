@@ -151,7 +151,7 @@ const bhphotovideo = async () => {
       in_stock: in_stock,
     };
     if (price) {
-      in_stock = in_stock == "In Stock";
+      in_stock = in_stock.includes("In Stock");
       data["in_stock"] = in_stock;
       console.log(data);
       updateProduct("B&H", source, price, in_stock, h1, link1);

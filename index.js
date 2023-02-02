@@ -9,6 +9,7 @@ const { adorama } = require("./adorama");
 const { barcodesinc } = require("./barcodesinc");
 const { bhphotovideo } = require("./bhphotovideo");
 const { allnewcluster } = require("./allnewcluster");
+const { googleshopping } = require("./googleshopping");
 
 const app = express(); // Initializing Express
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -72,4 +73,10 @@ app.post("/allnewcluster/", (req, res) => {
 // Making Express listen on port 3000
 app.listen(process.env.PORT || 3000, function () {
   console.log(`Running on port 3000.`);
+});
+
+app.get("/googleshopping/", function (req, res) {
+  // Retrieve the tag from our URL path
+  googleshopping(["Xerox W110"]);
+  res.send({ message: "Ok" });
 });
