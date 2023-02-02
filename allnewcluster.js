@@ -392,7 +392,10 @@ const allnewcluster = async (mpns) => {
       cluster.queue(source, get_barcodesinc);
     }
   }
-  let response = await axios.post(
+
+  await cluster.idle();
+  await cluster.close();
+  await axios.post(
     "http://103.49.239.195/update_with_mpns",
     { mpns: mpns },
     {
@@ -401,8 +404,6 @@ const allnewcluster = async (mpns) => {
       },
     }
   );
-  await cluster.idle();
-  await cluster.close();
 };
 
 module.exports = {
