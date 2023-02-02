@@ -384,7 +384,7 @@ const allnewcluster = async (mpns) => {
       return null;
     }
   };
-  for (let m = 0; m < mpns.length; module++) {
+  for (let m = 0; m < mpns.length; m++) {
     let source = mpns[m];
     if (source) {
       cluster.queue(source, get_bhphotovideo);
