@@ -82,6 +82,7 @@ const allnewcluster = async (mpns) => {
       let price = "";
       let h1 = "";
       let in_stock = true;
+      let stock = "";
       if (products.length > 0) {
         link1 = `https://www.bhphotovideo.com${products[0]}`;
         await page.goto(link1, {
@@ -91,7 +92,7 @@ const allnewcluster = async (mpns) => {
           let el = document.querySelector('div[data-selenium="pricingPrice');
           return el ? el.innerText : "";
         });
-        in_stock = await page.evaluate(() => {
+        stock = await page.evaluate(() => {
           let el = document.querySelector('span[data-selenium="stockStatus"]');
           return el ? el.innerText : "";
         });
@@ -115,7 +116,7 @@ const allnewcluster = async (mpns) => {
         in_stock: in_stock,
       };
       if (price) {
-        in_stock = in_stock == "In Stock";
+        in_stock = stock == "In Stock";
         data["in_stock"] = in_stock;
         console.log(data);
         updateDataProduct("B&H", data);
