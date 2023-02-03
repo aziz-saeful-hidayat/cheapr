@@ -10,7 +10,7 @@ const { GoogleSpreadsheet } = require("google-spreadsheet");
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
+  args: ["--no-sandbox"],
   executablePath: executablePath(),
 };
 const allnewcluster = async (mpns) => {
@@ -37,8 +37,6 @@ const allnewcluster = async (mpns) => {
   // We don't define a task and instead use own functions
   const get_bhphotovideo = async function ({ page, data: source }) {
     if (source) {
-      await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-
       let text = typeof source == "string" ? source.trim() : source;
       await page.goto(
         `https://www.bhphotovideo.com/c/search?q=${text}&sts=ma`,
@@ -130,8 +128,6 @@ const allnewcluster = async (mpns) => {
   };
   const get_adorama = async function ({ page, data: source }) {
     if (source) {
-      await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
         waitUntil: "networkidle2",
@@ -239,8 +235,6 @@ const allnewcluster = async (mpns) => {
   };
   const get_barcodesinc = async function ({ page, data: source }) {
     if (source) {
-      await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
         waitUntil: "networkidle2",
