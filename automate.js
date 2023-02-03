@@ -2843,6 +2843,9 @@ const checker = async function () {
 
     await page.keyboard.press("Enter");
     await page.waitForNavigation({ waitUntil: "networkidle0" });
+    await page.click('span[title="New items"]');
+    await page.waitForNavigation({ waitUntil: "networkidle0" });
+
     let [best] = await page.$x('//div[@class="sh-dp__cont"]');
     if (best) {
       let link1 = await page.evaluate(() => {
@@ -2873,7 +2876,7 @@ const checker = async function () {
             ) {
               link = tr
                 .querySelector(
-                  "div > div:nth-child(2) > div:nth-child(4) > div > a"
+                  "div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div > div > a"
                 )
                 .getAttribute("href");
             }
@@ -3005,7 +3008,7 @@ const checker = async function () {
     await browser.close();
   } catch (e) {
     console.log(e);
-    await browser.close();
+    // await browser.close();
   }
 };
 module.exports = {
