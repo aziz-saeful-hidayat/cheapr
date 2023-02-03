@@ -2924,6 +2924,7 @@ const checker = async function () {
         '//*[@id="sh-oo__filters-wrapper"]/div/a/span[contains(text(),"New")]'
       );
       if (new_filter) {
+        console.log("Clicking New Filter");
         await new_filter.click();
         await page.waitForTimeout(2000);
       }
