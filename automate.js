@@ -3002,8 +3002,10 @@ const checker = async function () {
         10000
       );
     }
+    await browser.close();
   } catch (e) {
     console.log(e);
+    await browser.close();
   }
 };
 module.exports = {
