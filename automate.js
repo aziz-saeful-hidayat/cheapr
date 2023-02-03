@@ -2926,7 +2926,7 @@ const checker = async function () {
       if (new_filter) {
         console.log("Clicking New Filter");
         await new_filter.click();
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(5000);
       }
 
       let url = await page.url();
