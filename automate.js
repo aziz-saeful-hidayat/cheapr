@@ -2925,7 +2925,9 @@ const checker = async function () {
       );
       if (new_filter) {
         await new_filter.click();
+        await page.waitForNavigation({ waitUntil: "networkidle0" });
       }
+
       let url = await page.url();
 
       let stores = await page.$$eval(
