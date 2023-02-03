@@ -2987,7 +2987,9 @@ const checker = async function () {
             "If anything goes wrong with your order, Google will help make it right.Learn more",
             ""
           );
-        settingSheet.getCellByA1("E" + row).value = store.link;
+        settingSheet.getCellByA1("E" + row).value = store.link
+          ? "https://www.google.com" + store.link
+          : "";
 
         row = row + 1;
       }
