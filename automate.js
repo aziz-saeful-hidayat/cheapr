@@ -2920,7 +2920,7 @@ const checker = async function () {
         waitUntil: "networkidle2",
       });
       let [new_filter] = await page.$x(
-        '//div[@id="sh-oo__filters-wrapper"]/div/span[contains(text(),"New")]'
+        '//div[@id="sh-oo__filters-wrapper"]/div/a/span[contains(text(),"New")]'
       );
       if (new_filter) {
         await new_filter.click();
