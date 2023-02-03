@@ -16,7 +16,7 @@ const site_name = "B&H";
 const bhphotovideo = async () => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
-    concurrency: Cluster.CONCURRENCY_CONTEXT,
+    concurrency: Cluster.CONCURRENCY_BROWSER,
     maxConcurrency: 5,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,

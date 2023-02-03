@@ -2778,6 +2778,158 @@ const allnew = async function () {
     allnew();
   }
 };
+
+const checker = async function () {
+  try {
+    let text = "Xerox W110";
+    puppeteer.use(StealthPlugin());
+    let browser = await puppeteer.launch({
+      headless: false,
+      args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
+      executablePath: executablePath(),
+    });
+    let page = await browser.newPage();
+    await page.authenticate({
+      username: "cheapr",
+      password: "Cheapr2023!",
+    });
+    await page.goto(`https://shopping.google.com/`, {
+      waitUntil: "networkidle2",
+    });
+    await page.waitForSelector('input[name="q"]');
+    // await page.evaluate(
+    //   (text) => (document.querySelector('input[name="q"]').value = text),
+    //   text
+    // );
+    await page.type('input[name="q"]', text);
+
+    await page.keyboard.press("Enter");
+    await page.waitForNavigation({ waitUntil: "networkidle0" });
+    let [best] = await page.$x('//div[@class="sh-dp__cont"]');
+    if (best) {
+      let link1 = await page.evaluate(() => {
+        let el = document.querySelector(
+          "div.sh-dp__cont > div > div > div:nth-child(2) > div:nth-child(5) > div:nth-child(1) > div > a"
+        );
+        return el ? el.getAttribute("href") : "";
+      });
+      await page.goto(`https://www.google.com${link1}`, {
+        waitUntil: "networkidle2",
+      });
+    } else {
+      await page.waitForSelector("div.sh-pr__product-results > div");
+      let products = await page.$$eval(
+        "div.sh-pr__product-results > div",
+        (trs) => {
+          return trs.map((tr) => {
+            let link = "";
+            if (
+              tr.querySelector(
+                "div:nth-child(2) > div.sh-dgr__content > div:nth-child(5) > div > a"
+              ) &&
+              tr
+                .querySelector(
+                  "div:nth-child(2) > div.sh-dgr__content > div:nth-child(5) > div > a"
+                )
+                .innerText.includes("Compare prices")
+            ) {
+              link = tr
+                .querySelector(
+                  "div:nth-child(2) > div.sh-dgr__content > span > a"
+                )
+                .getAttribute("href");
+            }
+            return link;
+          });
+        }
+      );
+      console.log("Products found");
+      products = products.filter((link) => {
+        return link != "";
+      });
+      console.log(products);
+      if (products.length > 0) {
+        link1 = products[0];
+        console.log(link1);
+        await page.goto(`https://www.google.com${link1}`, {
+          waitUntil: "networkidle2",
+        });
+      }
+    }
+    let low = await page.evaluate(() => {
+      let el = document.querySelector(
+        "div.sh-pricebar__details-section > div:nth-child(3) > div:nth-child(2) > div:nth-child(1) > span"
+      );
+      return el ? el.textContent : "";
+    });
+    let high = await page.evaluate(() => {
+      let el = document.querySelector(
+        "div.sh-pricebar__details-section > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > span"
+      );
+      return el ? el.textContent : "";
+    });
+    let [compare_el] = await page.$x('//a[contains(text(),"Compare price")]');
+    let compare = await page.evaluate(
+      (element) => (element ? element.getAttribute("href") : ""),
+      compare_el
+    );
+    console.log(low, high);
+    if (compare) {
+      await page.goto(`https://www.google.com${compare}`, {
+        waitUntil: "networkidle2",
+      });
+      let stores = await page.$$eval(
+        "#sh-osd__online-sellers-cont > tr",
+        (trs, text) => {
+          return trs.map((tr) => {
+            let objresult = {
+              name: "",
+              item: "",
+              total: "",
+              link: "",
+              reputation: "",
+            };
+            objresult["item"] = tr.querySelector("td:nth-child(3) > span")
+              ? tr.querySelector("td:nth-child(3) > span").textContent
+              : "";
+            objresult["total"] = tr.querySelector(
+              "td:nth-child(4) > div > div:nth-child(1)"
+            )
+              ? tr.querySelector("td:nth-child(4) > div > div:nth-child(1)")
+                  .textContent
+              : "";
+            objresult["link"] = tr.querySelector("td:nth-child(5) > div > a")
+              ? tr
+                  .querySelector("td:nth-child(5) > div > a")
+                  .getAttribute("href")
+              : "";
+            objresult["name"] = tr.querySelector(
+              "td:nth-child(1) > div:nth-child(1)"
+            )
+              ? tr.querySelector("td:nth-child(1) > div:nth-child(1)")
+                  .textContent
+              : "";
+            objresult["reputation"] = tr.querySelector(
+              "td:nth-child(1) > div:nth-child(2)"
+            )
+              ? tr.querySelector("td:nth-child(1) > div:nth-child(2)")
+                  .textContent
+              : "";
+            return objresult;
+          });
+        },
+        text
+      );
+      stores = products.stores((obj) => {
+        return obj["name"] != "";
+      });
+      console.log("stores found");
+      console.log(stores);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
 module.exports = {
   sellerAmazon,
   sellerAmazonCH,
@@ -2787,4 +2939,5 @@ module.exports = {
   barcodesinc,
   commision,
   allnew,
+  checker,
 };

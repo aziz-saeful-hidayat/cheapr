@@ -4,7 +4,13 @@ const bodyParser = require("body-parser");
 var path = require("path");
 const cors = require("cors");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
-const { sellerAmazon, walmart, commision, allnew } = require("./automate");
+const {
+  sellerAmazon,
+  walmart,
+  commision,
+  allnew,
+  checker,
+} = require("./automate");
 const { adorama } = require("./adorama");
 const { barcodesinc } = require("./barcodesinc");
 const { bhphotovideo } = require("./bhphotovideo");
@@ -70,13 +76,17 @@ app.post("/allnewcluster/", (req, res) => {
   allnewcluster(req.body.data);
   res.send({ message: "Ok" });
 });
-// Making Express listen on port 3000
-app.listen(process.env.PORT || 3000, function () {
-  console.log(`Running on port 3000.`);
-});
-
 app.get("/googleshopping/", function (req, res) {
   // Retrieve the tag from our URL path
   googleshopping(["Xerox W110"]);
   res.send({ message: "Ok" });
+});
+app.get("/checker/", function (req, res) {
+  // Retrieve the tag from our URL path
+  checker();
+  res.send({ message: "Ok" });
+});
+// Making Express listen on port 3000
+app.listen(process.env.PORT || 3000, function () {
+  console.log(`Running on port 3000.`);
 });

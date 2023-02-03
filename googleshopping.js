@@ -20,8 +20,8 @@ const googleshopping = async (mpns) => {
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    retryLimit: 10,
-    retryDelay: 30000,
+    // retryLimit: 10,
+    // retryDelay: 5000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {
@@ -48,7 +48,6 @@ const googleshopping = async (mpns) => {
     };
     page.setDefaultTimeout(0);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    await page.emulate(iPhone);
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(`https://shopping.google.com/`, {
       waitUntil: "networkidle2",
@@ -62,7 +61,46 @@ const googleshopping = async (mpns) => {
     await page.type('input[name="q"]', text);
 
     await page.keyboard.press("Enter");
-    await page.waitForTimeout(100000);
+    await page.waitForNavigation({ waitUntil: "networkidle2" });
+
+    await page.waitForSelector("div.sh-pr__product-results > div");
+    let products = await page.$$eval(
+      "div.sh-pr__product-results > div",
+      (trs) => {
+        return trs.map((tr) => {
+          let link = "";
+          if (
+            tr.querySelector(
+              "div:nth-child(2) > div.sh-dgr__content > div:nth-child(5) > div > a"
+            ) &&
+            tr
+              .querySelector(
+                "div:nth-child(2) > div.sh-dgr__content > div:nth-child(5) > div > a"
+              )
+              .innerText.includes("Compare prices")
+          ) {
+            link = tr
+              .querySelector(
+                "div:nth-child(2) > div.sh-dgr__content > span > a"
+              )
+              .getAttribute("href");
+          }
+          return link;
+        });
+      }
+    );
+    console.log("Products found");
+    products = products.filter((link) => {
+      return link != "";
+    });
+    console.log(products);
+    if (products.length > 0) {
+      link1 = products[0];
+      console.log(link1);
+      await page.goto(`https://www.google.com${link1}`, {
+        waitUntil: "networkidle2",
+      });
+    }
   });
 
   for (let i = 0; i < mpns.length; i++) {
@@ -71,8 +109,8 @@ const googleshopping = async (mpns) => {
   }
   // many more pages
 
-  await cluster.idle();
-  await cluster.close();
+  //   await cluster.idle();
+  //   await cluster.close();
 };
 
 module.exports = {
