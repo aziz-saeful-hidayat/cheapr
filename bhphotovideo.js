@@ -23,7 +23,7 @@ const bhphotovideo = async () => {
     monitor: true,
     retryLimit: 10,
     retryDelay: 30000,
-    timeout: 100000,
+    timeout: 1000000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {
@@ -52,36 +52,9 @@ const bhphotovideo = async () => {
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
 
     let text = typeof source == "string" ? source.trim() : source;
-    await page.goto(`https://www.bhphotovideo.com/`, {
+    await page.goto(`https://www.bhphotovideo.com/c/search?q=${text}&sts=ma`, {
       waitUntil: "networkidle2",
     });
-    await checkBlock();
-
-    await page.waitForSelector(
-      "#bh-app > section > header > div > div > div > div:nth-child(2) > section > div:nth-child(1) > form > input"
-    );
-
-    await page.type(
-      "#bh-app > section > header > div > div > div > div:nth-child(2) > section > div:nth-child(1) > form > input",
-      text
-    );
-    await page.click('button[data-selenium="submitS"]');
-    // await page.evaluate(
-    //   (text) =>
-    //     (document.querySelector(
-    //       "#bh-app > section > header > div > div > div > div:nth-child(2) > section > div:nth-child(1) > form > input"
-    //     ).value = text),
-    //   text
-    // );
-    // await page.evaluate(() => {
-    //   let el = document.querySelector(
-    //     "#bh-app > section > header > div > div > div > div:nth-child(2) > section > div:nth-child(1) > form > div > button"
-    //   );
-    //   el.click();
-    // });
-    await page.waitForTimeout(2000);
-
-    console.log("Passed");
     await checkBlock();
     let products = await page.$$eval(
       'div[data-selenium="miniProductPage"]',
