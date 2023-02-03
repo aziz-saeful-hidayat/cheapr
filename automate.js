@@ -2789,8 +2789,14 @@ const checker = async function () {
   console.log(settingDoc.title);
 
   let settingSheet = settingDoc.sheetsByTitle["Setting"];
-  await settingSheet.loadCells("A1:E10");
-
+  await settingSheet.loadCells("A1:E30");
+  settingSheet.getCellByA1("B2").value = "RUNNING";
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
   let resultSheet = settingDoc.sheetsByTitle["Results"];
   await resultSheet.loadCells("A1:F50");
 
@@ -2954,16 +2960,16 @@ const checker = async function () {
       console.log("stores found");
       // console.log(stores);
 
-      let row = 2;
+      let row = 5;
       for (const store of stores) {
         // console.log(store);
-        resultSheet.getCellByA1("A" + row).value = store.name.replace(
+        settingSheet.getCellByA1("A" + row).value = store.name.replace(
           "Opens in a new window",
           ""
         );
-        resultSheet.getCellByA1("B" + row).value = store.item;
-        resultSheet.getCellByA1("C" + row).value = store.total;
-        resultSheet.getCellByA1("D" + row).value = store.reputation
+        settingSheet.getCellByA1("B" + row).value = store.item;
+        settingSheet.getCellByA1("C" + row).value = store.total;
+        settingSheet.getCellByA1("D" + row).value = store.reputation
           .replace(
             "What makes this a trusted store?Customers may expect a positive shopping experience from this store. This includes the offer of fast shipping and easy returns, as well as good user ratings, among other factors. Learn more·",
             ""
@@ -2972,13 +2978,14 @@ const checker = async function () {
             "If anything goes wrong with your order, Google will help make it right.Learn more",
             ""
           );
-        resultSheet.getCellByA1("E" + row).value = store.link;
+        settingSheet.getCellByA1("E" + row).value = store.link;
 
         row = row + 1;
       }
+      settingSheet.getCellByA1("B2").value = "COMPLETED";
 
       await retry(
-        () => Promise.all([resultSheet.saveUpdatedCells()]),
+        () => Promise.all([settingSheet.saveUpdatedCells()]),
         5,
         true,
         10000
