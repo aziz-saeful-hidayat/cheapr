@@ -34,30 +34,14 @@ const googleshopping = async (mpns) => {
   });
   await cluster.task(async ({ page, data: source }) => {
     console.log(source);
-    const checkBlock = async () => {
-      let block = await page.evaluate(() => {
-        let el = document.querySelector("#px-captcha");
-        return el ? true : false;
-      });
-      let [blocked] = await page.$x(
-        '//*[contains(text(),"Before we continue")]'
-      );
-      if (block || blocked) {
-        throw new Error("Blocked");
-      }
-    };
+
     page.setDefaultTimeout(0);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(`https://shopping.google.com/`, {
       waitUntil: "networkidle2",
     });
-    await checkBlock();
     await page.waitForSelector('input[name="q"]');
-    // await page.evaluate(
-    //   (text) => (document.querySelector('input[name="q"]').value = text),
-    //   text
-    // );
     await page.type('input[name="q"]', text);
 
     await page.keyboard.press("Enter");

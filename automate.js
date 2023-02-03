@@ -60,6 +60,7 @@ const sellerAmazon = async function () {
   settingSheet.getCell(4, 1).value = "";
   settingSheet.getCell(4, 2).value = "RUNNING";
   settingSheet.getCell(4, 4).value = "";
+  let keyboard = settingSheet.getCell(4, 4).value;
 
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
@@ -2780,8 +2781,35 @@ const allnew = async function () {
 };
 
 const checker = async function () {
+  const settingDoc = new GoogleSpreadsheet(
+    "1wsxgrLmZrg1R7ywLeWgkpKqitZ369OGPTj9ukP__wL0"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsByTitle["Setting"];
+  await settingSheet.loadCells("A1:E10");
+
+  let resultSheet = settingDoc.sheetsByTitle["Results"];
+  await resultSheet.loadCells("A1:F50");
+
+  // for (let r = 2; r < 10; r++) {
+  //   let keyword = settingSheet.getCellByA1("A" + r).value;
+  //   settingSheet.getCellByA1("C" + r).value = keyword;
+  //   console.log(keyword);
+  // }
+
+  // await retry(
+  //   () => Promise.all([settingSheet.saveUpdatedCells()]),
+  //   5,
+  //   true,
+  //   10000
+  // );
+
   try {
-    let text = "Xerox W110";
+    // let text = "Xerox W110";
+    let text = settingSheet.getCellByA1("A2").value;
     puppeteer.use(StealthPlugin());
     let browser = await puppeteer.launch({
       headless: false,
@@ -2920,11 +2948,41 @@ const checker = async function () {
         },
         text
       );
-      stores = products.stores((obj) => {
+      stores = stores.filter((obj) => {
         return obj["name"] != "";
       });
       console.log("stores found");
-      console.log(stores);
+      // console.log(stores);
+
+      let row = 2;
+      for (const store of stores) {
+        // console.log(store);
+        resultSheet.getCellByA1("A" + row).value = store.name.replace(
+          "Opens in a new window",
+          ""
+        );
+        resultSheet.getCellByA1("B" + row).value = store.item;
+        resultSheet.getCellByA1("C" + row).value = store.total;
+        resultSheet.getCellByA1("D" + row).value = store.reputation
+          .replace(
+            "What makes this a trusted store?Customers may expect a positive shopping experience from this store. This includes the offer of fast shipping and easy returns, as well as good user ratings, among other factors. Learn more·",
+            ""
+          )
+          .replace(
+            "If anything goes wrong with your order, Google will help make it right.Learn more",
+            ""
+          );
+        resultSheet.getCellByA1("E" + row).value = store.link;
+
+        row = row + 1;
+      }
+
+      await retry(
+        () => Promise.all([resultSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
     }
   } catch (e) {
     console.log(e);
