@@ -2920,6 +2920,12 @@ const checker = async function () {
       await page.goto(`https://www.google.com${compare}`, {
         waitUntil: "networkidle2",
       });
+      let [new_filter] = await page.$x(
+        '//div[@id="sh-oo__filters-wrapper"]/div/span[contains(text(),"New")]'
+      );
+      if (new_filter) {
+        await new_filter.click();
+      }
       let stores = await page.$$eval(
         "#sh-osd__online-sellers-cont > tr",
         (trs, text) => {
