@@ -2873,10 +2873,10 @@ const checker = async function () {
               ).textContent
             : "";
           objresult["stock"] = tr.querySelector(
-            "div > a > div > div:nth-child(1) > div:nth-child(2) > span > span"
+            "div > a > div > div:nth-child(1) > div:nth-child(2) > span"
           )
             ? tr.querySelector(
-                "div > a > div > div:nth-child(1) > div:nth-child(2) > span > span"
+                "div > a > div > div:nth-child(1) > div:nth-child(2) > span"
               ).textContent
             : "";
 
@@ -2896,9 +2896,6 @@ const checker = async function () {
       return obj["name"] != "";
     });
     let row = 5;
-    settingSheet.getCellByA1("B2").value = low;
-    settingSheet.getCellByA1("C2").value = high;
-    settingSheet.getCellByA1("D2").value = url;
 
     for (const store of stores) {
       // console.log(store);
