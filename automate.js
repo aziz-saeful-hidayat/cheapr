@@ -2915,7 +2915,6 @@ const checker = async function () {
       compare_el
     );
     console.log(low, high);
-    let url = await page.url();
     if (compare) {
       await page.goto(`https://www.google.com${compare}`, {
         waitUntil: "networkidle2",
@@ -2926,6 +2925,8 @@ const checker = async function () {
       if (new_filter) {
         await new_filter.click();
       }
+      let url = await page.url();
+
       let stores = await page.$$eval(
         "#sh-osd__online-sellers-cont > tr",
         (trs, text) => {
