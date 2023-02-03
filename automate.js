@@ -2843,179 +2843,81 @@ const checker = async function () {
 
     await page.keyboard.press("Enter");
     await page.waitForNavigation({ waitUntil: "networkidle0" });
-    await page.click('span[title="New items"]');
-    await page.waitForNavigation({ waitUntil: "networkidle0" });
+    let stores = await page.$$eval(
+      'div[data-attrid="organic_offers_grid"] > div > div',
+      (trs, text) => {
+        return trs.map((tr) => {
+          let objresult = {
+            name: "",
+            title: "",
+            stock: "",
+            link: "",
+            price: "",
+          };
+          objresult["link"] = tr.querySelector("div > a")
+            ? tr.querySelector("div > a").getAttribute("href")
+            : "";
 
-    let [best] = await page.$x('//div[@class="sh-dp__cont"]');
-    if (best) {
-      let link1 = await page.evaluate(() => {
-        let el = document.querySelector(
-          "div.sh-dp__cont > div > div > div:nth-child(2) > div:nth-child(5) > div:nth-child(1) > div > a"
-        );
-        return el ? el.getAttribute("href") : "";
-      });
-      await page.goto(`https://www.google.com${link1}`, {
-        waitUntil: "networkidle2",
-      });
-    } else {
-      await page.waitForSelector("div.sh-pr__product-results > div");
-      let products = await page.$$eval(
-        "div.sh-pr__product-results > div",
-        (trs) => {
-          return trs.map((tr) => {
-            let link = "";
-            if (
-              tr.querySelector(
-                "div > div:nth-child(2) > div:nth-child(4) > div > a"
-              ) &&
-              tr
-                .querySelector(
-                  "div > div:nth-child(2) > div:nth-child(4) > div > a"
-                )
-                .innerText.includes("Compare prices")
-            ) {
-              link = tr
-                .querySelector(
-                  "div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div > div > a"
-                )
-                .getAttribute("href");
-            }
-            return link;
-          });
-        }
-      );
-      console.log("Products found");
-      products = products.filter((link) => {
-        return link != "";
-      });
-      console.log(products);
-      if (products.length > 0) {
-        link1 = products[0];
-        console.log(link1);
-        await page.goto(`https://www.google.com${link1}`, {
-          waitUntil: "networkidle2",
-        });
-      }
-    }
-    let low = await page.evaluate(() => {
-      let el = document.querySelector(
-        "div.sh-pricebar__details-section > div:nth-child(3) > div:nth-child(2) > div:nth-child(1) > span"
-      );
-      return el ? el.textContent : "";
-    });
-    let high = await page.evaluate(() => {
-      let el = document.querySelector(
-        "div.sh-pricebar__details-section > div:nth-child(3) > div:nth-child(2) > div:nth-child(2) > span"
-      );
-      return el ? el.textContent : "";
-    });
-    let [compare_el] = await page.$x('//a[contains(text(),"Compare price")]');
-    let compare = await page.evaluate(
-      (element) => (element ? element.getAttribute("href") : ""),
-      compare_el
-    );
-    console.log(low, high);
-    if (compare) {
-      await page.goto(`https://www.google.com${compare}`, {
-        waitUntil: "networkidle2",
-      });
-      let [new_filter] = await page.$x(
-        // '//div[@id="sh-oo__filters-wrapper"]/div/a/span[contains(text(),"New")]'
-        '//*[@id="sh-oo__filters-wrapper"]/div/a/span[contains(text(),"New")]'
-      );
-      if (new_filter) {
-        console.log("Clicking New Filter");
-        await new_filter.click();
-        await page.waitForTimeout(10000);
-      }
-
-      let url = await page.url();
-
-      let stores = await page.$$eval(
-        "#sh-osd__online-sellers-cont > tr",
-        (trs, text) => {
-          return trs.map((tr) => {
-            let objresult = {
-              name: "",
-              item: "",
-              total: "",
-              link: "",
-              reputation: "",
-            };
-            objresult["item"] = tr.querySelector("td:nth-child(3) > span")
-              ? tr.querySelector("td:nth-child(3) > span").textContent
-              : "";
-            objresult["total"] = tr.querySelector(
-              "td:nth-child(4) > div > div:nth-child(1)"
-            )
-              ? tr.querySelector("td:nth-child(4) > div > div:nth-child(1)")
-                  .textContent
-              : "";
-            objresult["link"] = tr.querySelector("td:nth-child(5) > div > a")
-              ? tr
-                  .querySelector("td:nth-child(5) > div > a")
-                  .getAttribute("href")
-              : "";
-            objresult["name"] = tr.querySelector(
-              "td:nth-child(1) > div:nth-child(1)"
-            )
-              ? tr.querySelector("td:nth-child(1) > div:nth-child(1)")
-                  .textContent
-              : "";
-            objresult["reputation"] = tr.querySelector(
-              "td:nth-child(1) > div:nth-child(2)"
-            )
-              ? tr.querySelector("td:nth-child(1) > div:nth-child(2)")
-                  .textContent
-              : "";
-            return objresult;
-          });
-        },
-        text
-      );
-      stores = stores.filter((obj) => {
-        return obj["name"] != "";
-      });
-      console.log("stores found");
-      // console.log(stores);
-
-      let row = 5;
-      settingSheet.getCellByA1("B2").value = low;
-      settingSheet.getCellByA1("C2").value = high;
-      settingSheet.getCellByA1("D2").value = url;
-
-      for (const store of stores) {
-        // console.log(store);
-        settingSheet.getCellByA1("A" + row).value = store.name.replace(
-          "Opens in a new window",
-          ""
-        );
-        settingSheet.getCellByA1("B" + row).value = store.item;
-        settingSheet.getCellByA1("C" + row).value = store.total;
-        settingSheet.getCellByA1("D" + row).value = store.reputation
-          .replace(
-            "What makes this a trusted store?Customers may expect a positive shopping experience from this store. This includes the offer of fast shipping and easy returns, as well as good user ratings, among other factors. Learn more·",
-            ""
+          objresult["name"] = tr.querySelector(
+            "div > a > div > div:nth-child(1) > div:nth-child(2) > div:nth-child(1)"
           )
-          .replace(
-            "If anything goes wrong with your order, Google will help make it right.Learn more",
-            ""
-          );
-        settingSheet.getCellByA1("E" + row).value = store.link
-          ? "https://www.google.com" + store.link
-          : "";
+            ? tr.querySelector(
+                "div > a > div > div:nth-child(1) > div:nth-child(2) > div:nth-child(1)"
+              ).textContent
+            : "";
+          objresult["title"] = tr.querySelector(
+            "div > a > div > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)"
+          )
+            ? tr.querySelector(
+                "div > a > div > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)"
+              ).textContent
+            : "";
+          objresult["stock"] = tr.querySelector(
+            "div > a > div > div:nth-child(1) > div:nth-child(2) > span > span"
+          )
+            ? tr.querySelector(
+                "div > a > div > div:nth-child(1) > div:nth-child(2) > span > span"
+              ).textContent
+            : "";
 
-        row = row + 1;
-      }
-      settingSheet.getCellByA1("E2").value = "COMPLETED";
+          objresult["price"] = tr.querySelector(
+            "div > a > div > div:nth-child(2) > div > span > span"
+          )
+            ? tr.querySelector(
+                "div > a > div > div:nth-child(2) > div > span > span"
+              ).textContent
+            : "";
+          return objresult;
+        });
+      },
+      text
+    );
+    stores = stores.filter((obj) => {
+      return obj["name"] != "";
+    });
+    let row = 5;
+    settingSheet.getCellByA1("B2").value = low;
+    settingSheet.getCellByA1("C2").value = high;
+    settingSheet.getCellByA1("D2").value = url;
 
-      await retry(
-        () => Promise.all([settingSheet.saveUpdatedCells()]),
-        5,
-        true,
-        10000
-      );
+    for (const store of stores) {
+      // console.log(store);
+      settingSheet.getCellByA1("A" + row).value = store.name;
+      settingSheet.getCellByA1("B" + row).value = store.title;
+      settingSheet.getCellByA1("C" + row).value = store.stock;
+      settingSheet.getCellByA1("D" + row).value = store.price;
+      settingSheet.getCellByA1("E" + row).value = store.link;
+      row = row + 1;
     }
+    settingSheet.getCellByA1("E2").value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+
     await browser.close();
   } catch (e) {
     console.log(e);
