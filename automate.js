@@ -2925,7 +2925,7 @@ const checker = async function () {
       );
       if (new_filter) {
         await new_filter.click();
-        await page.waitForNavigation({ waitUntil: "networkidle0" });
+        await page.waitForTimeout(2000);
       }
 
       let url = await page.url();
