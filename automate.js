@@ -2863,17 +2863,17 @@ const checker = async function () {
             let link = "";
             if (
               tr.querySelector(
-                "div:nth-child(2) > div.sh-dgr__content > div:nth-child(5) > div > a"
+                "div > div:nth-child(2) > div:nth-child(4) > div > a"
               ) &&
               tr
                 .querySelector(
-                  "div:nth-child(2) > div.sh-dgr__content > div:nth-child(5) > div > a"
+                  "div > div:nth-child(2) > div:nth-child(4) > div > a"
                 )
                 .innerText.includes("Compare prices")
             ) {
               link = tr
                 .querySelector(
-                  "div:nth-child(2) > div.sh-dgr__content > span > a"
+                  "div > div:nth-child(2) > div:nth-child(4) > div > a"
                 )
                 .getAttribute("href");
             }
