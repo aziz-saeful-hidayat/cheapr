@@ -2790,7 +2790,11 @@ const checker = async function () {
 
   let settingSheet = settingDoc.sheetsByTitle["Setting"];
   await settingSheet.loadCells("A1:E30");
-  settingSheet.getCellByA1("B2").value = "RUNNING";
+  settingSheet.getCellByA1("E2").value = "RUNNING";
+  settingSheet.getCellByA1("B2").value = "";
+  settingSheet.getCellByA1("C2").value = "";
+  settingSheet.getCellByA1("D2").value = "";
+  settingSheet.clearRows({ start: "A5", end: "E30" });
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
     5,
@@ -2908,6 +2912,7 @@ const checker = async function () {
       compare_el
     );
     console.log(low, high);
+    let url = await page.url();
     if (compare) {
       await page.goto(`https://www.google.com${compare}`, {
         waitUntil: "networkidle2",
@@ -2961,6 +2966,10 @@ const checker = async function () {
       // console.log(stores);
 
       let row = 5;
+      settingSheet.getCellByA1("B2").value = low;
+      settingSheet.getCellByA1("C2").value = high;
+      settingSheet.getCellByA1("D2").value = url;
+
       for (const store of stores) {
         // console.log(store);
         settingSheet.getCellByA1("A" + row).value = store.name.replace(
@@ -2982,7 +2991,7 @@ const checker = async function () {
 
         row = row + 1;
       }
-      settingSheet.getCellByA1("B2").value = "COMPLETED";
+      settingSheet.getCellByA1("E2").value = "COMPLETED";
 
       await retry(
         () => Promise.all([settingSheet.saveUpdatedCells()]),
