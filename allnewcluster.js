@@ -338,7 +338,7 @@ const allnewcluster = async (mpns) => {
           in_stock = price ? stock == "In Stock" : true;
           data = {
             source: source,
-            link: link1,
+            link: `https://www.barcodesinc.com${link1}`,
             title: h1,
             price: price,
             in_stock: in_stock,
