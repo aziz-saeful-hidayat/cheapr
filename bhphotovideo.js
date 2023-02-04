@@ -7,7 +7,7 @@ const { updateProduct } = require("./utils");
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
+  args: ["--no-sandbox"],
   executablePath: executablePath(),
 };
 
@@ -21,8 +21,8 @@ const bhphotovideo = async () => {
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    retryLimit: 10,
-    retryDelay: 30000,
+    // retryLimit: 10,
+    // retryDelay: 30000,
     timeout: 1000000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
@@ -49,7 +49,7 @@ const bhphotovideo = async () => {
       }
     };
     page.setDefaultTimeout(0);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    // await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
 
     let text = typeof source == "string" ? source.trim() : source;
     await page.goto(`https://www.bhphotovideo.com/c/search?q=${text}&sts=ma`, {
