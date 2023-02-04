@@ -344,7 +344,7 @@ const allnewcluster = async (mpns) => {
             in_stock: in_stock,
           };
           console.log(data);
-          updateDataProduct("Adorama", data);
+          updateDataProduct("Barcodes Inc", data);
         } else {
           price = await page.evaluate(() => {
             let el = document.querySelector(
@@ -371,15 +371,15 @@ const allnewcluster = async (mpns) => {
           };
           if (h1.includes(text) && price) {
             console.log(data);
-            updateDataProduct("Adorama", data);
+            updateDataProduct("Barcodes Inc", data);
           } else {
             console.log(empty_data);
-            updateDataProduct("Adorama", empty_data);
+            updateDataProduct("Barcodes Inc", empty_data);
           }
         }
       } else {
         console.log(empty_data);
-        updateDataProduct("Adorama", empty_data);
+        updateDataProduct("Barcodes Inc", empty_data);
       }
     } else {
       return null;
