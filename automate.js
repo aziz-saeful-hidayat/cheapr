@@ -3173,4 +3173,5 @@ module.exports = {
   commision,
   allnew,
   checker,
+  checker2,
 };

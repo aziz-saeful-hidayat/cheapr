@@ -10,12 +10,14 @@ const {
   commision,
   allnew,
   checker,
+  checker2,
 } = require("./automate");
 const { adorama } = require("./adorama");
 const { barcodesinc } = require("./barcodesinc");
 const { bhphotovideo } = require("./bhphotovideo");
 const { allnewcluster } = require("./allnewcluster");
 const { googleshopping } = require("./googleshopping");
+const { gshopping } = require("./gshopping");
 
 const app = express(); // Initializing Express
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -81,9 +83,19 @@ app.get("/googleshopping/", function (req, res) {
   googleshopping(["Xerox W110"]);
   res.send({ message: "Ok" });
 });
+app.get("/gshopping/", function (req, res) {
+  // Retrieve the tag from our URL path
+  gshopping();
+  res.send({ message: "Ok" });
+});
 app.get("/checker/", function (req, res) {
   // Retrieve the tag from our URL path
   checker();
+  res.send({ message: "Ok" });
+});
+app.get("/checker2/", function (req, res) {
+  // Retrieve the tag from our URL path
+  checker2();
   res.send({ message: "Ok" });
 });
 // Making Express listen on port 3000
