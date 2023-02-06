@@ -60,7 +60,6 @@ const sellerAmazon = async function () {
   settingSheet.getCell(4, 1).value = "";
   settingSheet.getCell(4, 2).value = "RUNNING";
   settingSheet.getCell(4, 4).value = "";
-  let keyboard = settingSheet.getCell(4, 4).value;
 
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
@@ -2930,7 +2929,7 @@ const checker2 = async function () {
   console.log(settingDoc.title);
 
   let settingSheet = settingDoc.sheetsByTitle["Setting"];
-  await settingSheet.loadCells("A1:E30");
+  await settingSheet.loadCells("A1:F30");
   settingSheet.getCellByA1("E2").value = "RUNNING";
   settingSheet.getCellByA1("B2").value = "";
   settingSheet.getCellByA1("C2").value = "";
@@ -3082,6 +3081,7 @@ const checker2 = async function () {
               total: "",
               link: "",
               reputation: "",
+              instock: "",
             };
             objresult["item"] = tr.querySelector("td:nth-child(3) > span")
               ? tr.querySelector("td:nth-child(3) > span").textContent
@@ -3114,11 +3114,36 @@ const checker2 = async function () {
         },
         text
       );
+      // filter trusted store
       stores = stores.filter((obj) => {
-        return obj["name"] != "";
+        return obj["name"] != "" && obj["reputation"].includes("Trusted store");
       });
       console.log("stores found");
       // console.log(stores);
+
+      // get data stock
+      for (const store of stores) {
+        // go to web store
+        await page.goto(`https://www.google.com${store.link}`, {
+          waitUntil: ["domcontentloaded", "networkidle2"],
+          timeout: 0,
+        });
+
+        // check stock with schema or text contain in stock
+        let inStock = "No";
+        let source = await page.content({ waitUntil: "domcontentloaded" });
+        if (
+          source.includes("schema.org/InStock") ||
+          source.toLowerCase().includes("in stock")
+        ) {
+          inStock = "Yes";
+        }
+
+        console.log(store.name + ":" + inStock);
+
+        // update data stock
+        store["instock"] = inStock;
+      }
 
       let row = 5;
       settingSheet.getCellByA1("B2").value = low;
@@ -3145,6 +3170,8 @@ const checker2 = async function () {
         settingSheet.getCellByA1("E" + row).value = store.link
           ? "https://www.google.com" + store.link
           : "";
+
+        settingSheet.getCellByA1("F" + row).value = store.instock;
 
         row = row + 1;
       }
