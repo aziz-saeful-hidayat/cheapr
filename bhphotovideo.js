@@ -21,9 +21,9 @@ const bhphotovideo = async () => {
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    // retryLimit: 10,
-    // retryDelay: 30000,
-    timeout: 1000000,
+    retryLimit: 1,
+    retryDelay: 30000,
+    timeout: 100000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {
