@@ -2934,7 +2934,7 @@ const checker2 = async function () {
   settingSheet.getCellByA1("B2").value = "";
   settingSheet.getCellByA1("C2").value = "";
   settingSheet.getCellByA1("D2").value = "";
-  settingSheet.clearRows({ start: "A5", end: "E30" });
+  settingSheet.clearRows({ start: "A5", end: "F30" });
   await retry(
     () => Promise.all([settingSheet.saveUpdatedCells()]),
     5,
