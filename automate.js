@@ -3183,6 +3183,40 @@ const checker2 = async function () {
         true,
         10000
       );
+
+      // save db
+      for (const store of stores) {
+        await axios.post(
+          "http://103.49.239.195/gshopping/",
+          {
+            keyword: text,
+            low: low.replace("$", "").replace(",", ""),
+            high: high.replace("$", "").replace(",", ""),
+            url_gshopping: url,
+            store: store.name.replace("Opens in a new window", ""),
+            item_price: store.item.replace("$", "").replace(",", ""),
+            total_price: store.total.replace("$", "").replace(",", ""),
+            in_stock: store.instock == "Yes" ? true : false,
+            reputation: store.reputation
+              .replace(
+                "What makes this a trusted store?Customers may expect a positive shopping experience from this store. This includes the offer of fast shipping and easy returns, as well as good user ratings, among other factors. Learn more·",
+                ""
+              )
+              .replace(
+                "If anything goes wrong with your order, Google will help make it right.Learn more",
+                ""
+              ),
+            url_product: store.link
+              ? "https://www.google.com" + store.link
+              : "",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
     }
     await browser.close();
   } catch (e) {

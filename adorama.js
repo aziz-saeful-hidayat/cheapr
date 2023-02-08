@@ -21,8 +21,8 @@ const adorama = async () => {
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    retryLimit: 1,
-    retryDelay: 30000,
+    retryLimit: 10,
+    retryDelay: 300000,
     timeout: 100000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
