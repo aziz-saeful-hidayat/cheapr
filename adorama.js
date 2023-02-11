@@ -17,7 +17,7 @@ const adorama = async () => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 1,
+    maxConcurrency: 3,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
@@ -49,12 +49,27 @@ const adorama = async () => {
       }
     };
     page.setDefaultTimeout(0);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "user-cheapr-country-au",
+      password: "Cheapr2023!",
+    });
     let text = typeof source == "string" ? source.trim() : source.toString();
-    await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
+    await page.goto(`https://www.adorama.com/`, {
       waitUntil: "networkidle2",
     });
     await checkBlock();
+    await page.waitForSelector("#searchDesktop > input");
+    await page.evaluate(
+      (text) => (document.querySelector("#searchDesktop > input").value = text),
+      text
+    );
+    await page.evaluate(() => {
+      let el = document.querySelector("#searchDesktop > button");
+      el.click();
+    });
+    await page.waitForNavigation({ waitUntil: "networkidle2" });
+    await checkBlock();
+
     let [not_found] = await page.$x('//h1[contains(text(),"Sorry, we didn")]');
     let products = await page.$$eval(
       "#productGridPlaceholder > div > div.item-list.clear.style-is-list > div",
@@ -144,7 +159,7 @@ const adorama = async () => {
   });
 
   let response = await axios.post(
-    "http://103.49.239.195/get_mpns",
+    "https://cheapr.my.id/get_mpns",
     { site: site_name },
     {
       headers: {

@@ -17,7 +17,7 @@ const barcodesinc = async () => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 5,
+    maxConcurrency: 3,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
@@ -198,7 +198,7 @@ const barcodesinc = async () => {
   });
 
   let response = await axios.post(
-    "http://103.49.239.195/get_mpns",
+    "https://cheapr.my.id/get_mpns",
     { site: site_name },
     {
       headers: {

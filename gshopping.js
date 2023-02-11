@@ -264,7 +264,7 @@ const gshopping = async () => {
   cluster.queue();
 
   //   let response = await axios.post(
-  //     "http://103.49.239.195/get_mpns",
+  //     "https://cheapr.my.id/get_mpns",
   //     { site: site_name },
   //     {
   //       headers: {

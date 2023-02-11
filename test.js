@@ -23,7 +23,7 @@ const updateProduct = async function (site, mpn, price, in_stock) {
     : null;
   const data = { site: site, mpn: mpn, price: dec_price, in_stock: in_stock };
 
-  fetch("http://103.49.239.195/update_product", {
+  fetch("https://cheapr.my.id/update_product", {
     method: "POST", // or 'PUT'
     headers: {
       "Content-Type": "application/json",

@@ -1614,7 +1614,7 @@ const bhphotovideo = async function () {
       }
     };
     let response = await axios.post(
-      "http://103.49.239.195/get_mpns",
+      "https://cheapr.my.id/get_mpns",
       { site: "B&H" },
       {
         headers: {
@@ -1780,7 +1780,7 @@ const adorama = async function () {
     };
 
     let response = await axios.post(
-      "http://103.49.239.195/get_mpns",
+      "https://cheapr.my.id/get_mpns",
       { site: "Adorama" },
       {
         headers: {
@@ -1892,7 +1892,7 @@ const barcodesinc = async function () {
     await page.setDefaultNavigationTimeout(0);
 
     let response = await axios.post(
-      "http://103.49.239.195/get_mpns",
+      "https://cheapr.my.id/get_mpns",
       { site: "Barcodes Inc" },
       {
         headers: {
@@ -2620,7 +2620,7 @@ const allnew = async function () {
       if (source && !price) {
         let message = `Crawling New MPN: ${source} on Row ${i}`;
         let response = await axios.post(
-          "http://103.49.239.195/get_data",
+          "https://cheapr.my.id/get_data",
           { mpn: source },
           {
             headers: {
@@ -3187,7 +3187,7 @@ const checker2 = async function () {
       // save db
       for (const store of stores) {
         await axios.post(
-          "http://103.49.239.195/gshopping/",
+          "https://cheapr.my.id/gshopping/",
           {
             keyword: text,
             low: low.replace("$", "").replace(",", ""),

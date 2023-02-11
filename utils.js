@@ -50,7 +50,7 @@ const updateProduct = function (site, mpn, price, in_stock, title, url) {
     url: url,
   };
   axios
-    .post("http://103.49.239.195/update_product", data, {
+    .post("https://cheapr.my.id/update_product", data, {
       headers: {
         "Content-Type": "application/json",
       },

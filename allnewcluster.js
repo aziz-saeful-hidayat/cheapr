@@ -397,7 +397,7 @@ const allnewcluster = async (mpns) => {
   await cluster.idle();
   await cluster.close();
   await axios.post(
-    "http://103.49.239.195/update_with_mpns",
+    "https://cheapr.my.id/update_with_mpns",
     { mpns: mpns },
     {
       headers: {
