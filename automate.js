@@ -3239,78 +3239,81 @@ const checker2 = async function () {
 };
 const trackings = async function () {
   let response = await axios.get(
-    "https://cheapr.my.id/update_with_mpns",
-    { mpns: mpns },
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
+    "https://cheapr.my.id/scraping_status/?search=check_empty&format=json"
   );
-  const doc = new GoogleSpreadsheet(
-    "15bwn-UH8N7oijGbCzM4DADEMEe3Ygjp3tEbV51gUzYs"
-  );
-  await doc.useServiceAccountAuth(creds);
-  await doc.loadInfo();
-  console.log(doc.title);
-  const resSheet = doc.sheetsById["1523395279"];
-  try {
-    let rowCount = resSheet.rowCount;
-    console.log(rowCount);
-    let start = 1;
-    let end = rowCount;
-    // let end = 200;
-    let delivered = { green: 1 };
-    let transit = { red: 1, green: 1 };
-    let issue = { red: 1, blue: 1 };
-    let refunded = { red: 1 };
+  let result = await response.data.results;
+  if (result.length > 0) {
+    let data = result[0];
+    if (data["status"] != "RUNNING") {
+      await axios.patch(`https://cheapr.my.id/scraping_status/${data["pk"]}/`, {
+        status: "RUNNING",
+      });
+      const doc = new GoogleSpreadsheet(
+        "15bwn-UH8N7oijGbCzM4DADEMEe3Ygjp3tEbV51gUzYs"
+      );
+      await doc.useServiceAccountAuth(creds);
+      await doc.loadInfo();
+      console.log(doc.title);
+      const resSheet = doc.sheetsById["1523395279"];
+      try {
+        let rowCount = resSheet.rowCount;
+        console.log(rowCount);
+        let start = 1;
+        let end = rowCount;
+        // let end = 200;
+        let delivered = { green: 1 };
+        let transit = { red: 1, green: 1 };
+        let issue = { red: 1, blue: 1 };
+        let refunded = { red: 1 };
 
-    await resSheet.loadCells(`AM${start}:AM${end}`);
-    let tracking_numbers = [];
-    for (let i = start; i < end; i++) {
-      let cell = resSheet.getCellByA1(`AM${i}`);
-      if (cell != undefined) {
-        let source = cell.value;
-        let bgcolor = undefined;
+        await resSheet.loadCells(`AM${start}:AM${end}`);
+        let tracking_numbers = [];
+        for (let i = start; i < end; i++) {
+          let cell = resSheet.getCellByA1(`AM${i}`);
+          if (cell != undefined) {
+            let source = cell.value;
+            let bgcolor = undefined;
 
-        try {
-          bgcolor = cell.backgroundColor;
-        } catch (e) {}
-        let status = () => {
-          if (JSON.stringify(bgcolor) == JSON.stringify(delivered)) {
-            return "delivered";
-          } else if (JSON.stringify(bgcolor) == JSON.stringify(transit)) {
-            return "transit";
-          } else if (JSON.stringify(bgcolor) == JSON.stringify(issue)) {
-            return "issue";
-          } else if (JSON.stringify(bgcolor) == JSON.stringify(refunded)) {
-            return "refunded";
-          } else {
-            return "unknown";
+            try {
+              bgcolor = cell.backgroundColor;
+            } catch (e) {}
+            let status = () => {
+              if (JSON.stringify(bgcolor) == JSON.stringify(delivered)) {
+                return "delivered";
+              } else if (JSON.stringify(bgcolor) == JSON.stringify(transit)) {
+                return "transit";
+              } else if (JSON.stringify(bgcolor) == JSON.stringify(issue)) {
+                return "issue";
+              } else if (JSON.stringify(bgcolor) == JSON.stringify(refunded)) {
+                return "refunded";
+              } else {
+                return "unknown";
+              }
+            };
+            let track_status = status();
+            if (
+              source &&
+              ["transit", "issue", "unknown"].includes(track_status)
+            ) {
+              let trackings = source
+                .toString()
+                .trim()
+                .split(/\r?\n/)
+                .map((e) => e.trim())
+                .filter((e) => e != "");
+              console.log(trackings, track_status);
+              tracking_numbers.push({ idx: i, data: trackings });
+            }
           }
-        };
-        let track_status = status();
-        if (source && ["transit", "issue", "unknown"].includes(track_status)) {
-          let trackings = source
-            .toString()
-            .trim()
-            .split(/\r?\n/)
-            .map((e) => e.trim())
-            .filter((e) => e != "");
-          console.log(trackings, track_status);
-          tracking_numbers.push({ idx: i, data: trackings });
         }
+        console.log(tracking_numbers.length);
+        alltrackers(data["pk"], tracking_numbers);
+        console.log("Completed");
+      } catch (e) {
+        console.log("Error");
+        console.log(e);
       }
     }
-    console.log(tracking_numbers.length);
-    // ups(tracking_numbers);
-    // fedex(tracking_numbers);
-    // usps(tracking_numbers);
-    alltrackers(tracking_numbers);
-    console.log("Completed");
-  } catch (e) {
-    console.log("Error");
-    console.log(e);
   }
 };
 

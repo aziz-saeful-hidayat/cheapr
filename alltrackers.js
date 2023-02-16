@@ -13,7 +13,7 @@ const PUPPETEER_OPTIONS = {
   // userDataDir: "./user_data",
 };
 
-const alltrackers = async (tracks) => {
+const alltrackers = async (pk, tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -339,6 +339,9 @@ const alltrackers = async (tracks) => {
   console.log(not_criteria);
   await cluster.idle();
   await cluster.close();
+  await axios.patch(`https://cheapr.my.id/scraping_status/${pk}/`, {
+    status: "COMPLETED",
+  });
 };
 
 module.exports = {
