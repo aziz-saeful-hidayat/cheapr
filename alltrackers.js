@@ -17,7 +17,7 @@ const alltrackers = async (tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 5,
+    maxConcurrency: 3,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
