@@ -3238,6 +3238,15 @@ const checker2 = async function () {
   }
 };
 const trackings = async function () {
+  let response = await axios.get(
+    "https://cheapr.my.id/update_with_mpns",
+    { mpns: mpns },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
   const doc = new GoogleSpreadsheet(
     "15bwn-UH8N7oijGbCzM4DADEMEe3Ygjp3tEbV51gUzYs"
   );
