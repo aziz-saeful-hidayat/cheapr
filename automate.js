@@ -2,7 +2,13 @@ var path = require("path");
 const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the file saved above
 const axios = require("axios");
 const { GoogleSpreadsheet } = require("google-spreadsheet");
-const { retry, sleep, updateProduct, updateDataProduct } = require("./utils");
+const {
+  retry,
+  sleep,
+  updateProduct,
+  updateDataProduct,
+  sendSlack,
+} = require("./utils");
 const nodemailer = require("nodemailer");
 const csvParser = require("csv-parser");
 const needle = require("needle");
@@ -18,6 +24,10 @@ const defaultViewport = {
   width: 1280,
 };
 const { executablePath } = require("puppeteer");
+const { ups } = require("./ups");
+const { fedex } = require("./fedex");
+const { usps } = require("./usps");
+const { alltrackers } = require("./alltrackers");
 PROXY_USERNAME = "scraperapi";
 PROXY_PASSWORD = "e5d87185d49c8749431089fa73ef4731"; // <-- enter your API_Key here
 PROXY_SERVER = "proxy-server.scraperapi.com";
@@ -3224,6 +3234,184 @@ const checker2 = async function () {
     // await browser.close();
   }
 };
+const trackings = async function () {
+  const doc = new GoogleSpreadsheet(
+    "15bwn-UH8N7oijGbCzM4DADEMEe3Ygjp3tEbV51gUzYs"
+  );
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo();
+  console.log(doc.title);
+  const resSheet = doc.sheetsById["1523395279"];
+  try {
+    let rowCount = resSheet.rowCount;
+    console.log(rowCount);
+    let start = 1;
+    let end = rowCount;
+    // let end = 200;
+    let delivered = { green: 1 };
+    let transit = { red: 1, green: 1 };
+    let issue = { red: 1, blue: 1 };
+    let refunded = { red: 1 };
+
+    await resSheet.loadCells(`AM${start}:AM${end}`);
+    let tracking_numbers = [];
+    for (let i = start; i < end; i++) {
+      let cell = resSheet.getCellByA1(`AM${i}`);
+      if (cell != undefined) {
+        let source = cell.value;
+        let bgcolor = undefined;
+
+        try {
+          bgcolor = cell.backgroundColor;
+        } catch (e) {}
+        let status = () => {
+          if (JSON.stringify(bgcolor) == JSON.stringify(delivered)) {
+            return "delivered";
+          } else if (JSON.stringify(bgcolor) == JSON.stringify(transit)) {
+            return "transit";
+          } else if (JSON.stringify(bgcolor) == JSON.stringify(issue)) {
+            return "issue";
+          } else if (JSON.stringify(bgcolor) == JSON.stringify(refunded)) {
+            return "refunded";
+          } else {
+            return "unknown";
+          }
+        };
+        let track_status = status();
+        if (source && ["transit", "issue", "unknown"].includes(track_status)) {
+          let trackings = source
+            .toString()
+            .trim()
+            .split(/\r?\n/)
+            .map((e) => e.trim())
+            .filter((e) => e != "");
+          console.log(trackings, track_status);
+          tracking_numbers.push({ idx: i, data: trackings });
+        }
+      }
+    }
+    console.log(tracking_numbers.length);
+    // ups(tracking_numbers);
+    // fedex(tracking_numbers);
+    // usps(tracking_numbers);
+    alltrackers(tracking_numbers);
+    console.log("Completed");
+  } catch (e) {
+    console.log("Error");
+    console.log(e);
+  }
+};
+
+const update_trackings = async function () {
+  const doc = new GoogleSpreadsheet(
+    "15bwn-UH8N7oijGbCzM4DADEMEe3Ygjp3tEbV51gUzYs"
+  );
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo();
+  console.log(doc.title);
+  const resSheet = doc.sheetsById["1523395279"];
+  try {
+    let rowCount = resSheet.rowCount;
+    console.log(rowCount);
+    let start = 1;
+    let end = rowCount;
+    // let end = 200;
+    let delivered = { green: 1 };
+    let transit = { red: 1, green: 1 };
+    let issue = { red: 1, blue: 1 };
+    let refunded = { red: 1 };
+
+    await resSheet.loadCells(`AM${start}:AM${end}`);
+    let tracking_numbers = [];
+    for (let i = start; i < end; i++) {
+      let cell = resSheet.getCellByA1(`AM${i}`);
+      if (cell != undefined) {
+        let source = cell.value;
+        let bgcolor = undefined;
+
+        try {
+          bgcolor = cell.backgroundColor;
+        } catch (e) {}
+        let status = () => {
+          if (JSON.stringify(bgcolor) == JSON.stringify(delivered)) {
+            return "delivered";
+          } else if (JSON.stringify(bgcolor) == JSON.stringify(transit)) {
+            return "transit";
+          } else if (JSON.stringify(bgcolor) == JSON.stringify(issue)) {
+            return "issue";
+          } else if (JSON.stringify(bgcolor) == JSON.stringify(refunded)) {
+            return "refunded";
+          } else {
+            return "unknown";
+          }
+        };
+        let track_status = status();
+        if (source && ["transit", "issue", "unknown"].includes(track_status)) {
+          let trackings = source
+            .toString()
+            .trim()
+            .split(/\r?\n/)
+            .map((e) => e.trim())
+            .filter((e) => e != "");
+          console.log(trackings, track_status);
+          tracking_numbers.push({ idx: i, data: trackings, bgcolor: bgcolor });
+        }
+      }
+    }
+    console.log(tracking_numbers.length);
+    for (let j = 0; j < tracking_numbers.length; j++) {
+      let data = tracking_numbers[j]["data"];
+      let idx = tracking_numbers[j]["idx"];
+      let bgcolor = tracking_numbers[j]["bgcolor"];
+
+      if (data.length == 1) {
+        let response = await axios.get(
+          `https://cheapr.my.id/tracking/?tracking_number=${data[0]}&format=json`
+        );
+        let result = await response.data.results;
+        if (result.length == 1) {
+          let result_data = result[0];
+          if (result_data["status"] == "D") {
+            let cell = resSheet.getCellByA1(`AM${idx}`);
+            backgroundColor = cell.backgroundColor;
+            if (JSON.stringify(backgroundColor) !== JSON.stringify(delivered)) {
+              cell.backgroundColor = delivered;
+              console.log(`AM${idx}`, data[0], "Delivered");
+            }
+          } else if (result_data["status"] == "I") {
+            let cell = resSheet.getCellByA1(`AM${idx}`);
+            backgroundColor = cell.backgroundColor;
+            if (JSON.stringify(backgroundColor) !== JSON.stringify(issue)) {
+              cell.backgroundColor = issue;
+              console.log(`AM${idx}`, data[0], "Issue");
+              sendSlack(
+                "#tracking-status",
+                `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AM${idx}`
+              );
+            }
+          } else if (result_data["status"] == "T") {
+            let cell = resSheet.getCellByA1(`AM${idx}`);
+            backgroundColor = cell.backgroundColor;
+            if (JSON.stringify(backgroundColor) !== JSON.stringify(transit)) {
+              cell.backgroundColor = transit;
+              console.log(`AM${idx}`, data[0], "Transit");
+            }
+          }
+        }
+      }
+    }
+    await retry(
+      () => Promise.all([resSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    console.log("Completed");
+  } catch (e) {
+    console.log("Error");
+    console.log(e);
+  }
+};
 module.exports = {
   sellerAmazon,
   sellerAmazonCH,
@@ -3235,4 +3423,6 @@ module.exports = {
   allnew,
   checker,
   checker2,
+  trackings,
+  update_trackings,
 };

@@ -11,6 +11,8 @@ const {
   allnew,
   checker,
   checker2,
+  trackings,
+  update_trackings,
 } = require("./automate");
 const { adorama } = require("./adorama");
 const { barcodesinc } = require("./barcodesinc");
@@ -18,6 +20,8 @@ const { bhphotovideo } = require("./bhphotovideo");
 const { allnewcluster } = require("./allnewcluster");
 const { googleshopping } = require("./googleshopping");
 const { gshopping } = require("./gshopping");
+const { fedex } = require("./fedex");
+const { ups } = require("./ups");
 
 const app = express(); // Initializing Express
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -96,6 +100,26 @@ app.get("/checker/", function (req, res) {
 app.get("/checker2/", function (req, res) {
   // Retrieve the tag from our URL path
   checker2();
+  res.send({ message: "Ok" });
+});
+
+app.get("/fedex/", function (req, res) {
+  // Retrieve the tag from our URL path
+  fedex();
+  res.send({ message: "Ok" });
+});
+app.get("/ups/", function (req, res) {
+  // Retrieve the tag from our URL path
+  ups();
+  res.send({ message: "Ok" });
+});
+app.get("/trackings/", function (req, res) {
+  // Retrieve the tag from our URL path
+  trackings();
+  res.send({ message: "Ok" });
+});
+app.get("/update_trackings/", function (req, res) {
+  update_trackings();
   res.send({ message: "Ok" });
 });
 // Making Express listen on port 3000

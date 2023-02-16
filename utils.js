@@ -64,9 +64,29 @@ const updateProduct = function (site, mpn, price, in_stock, title, url) {
     });
 };
 
+const sendSlack = function (channel, text) {
+  const data = {
+    channel: channel,
+    text: text,
+  };
+  axios
+    .post("https://cheapr.my.id/send_slack", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    .then((response) => response.data)
+    .then((data) => {
+      console.log("Success:", data);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+};
 module.exports = {
   updateProduct,
   updateDataProduct,
+  sendSlack,
   retry,
   sleep,
 };
