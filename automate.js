@@ -541,7 +541,7 @@ const sellerAmazon = async function () {
     await writeSheet(result_data_3, "577275692");
 
     let result_data_4 = await grabData(4, 2);
-    await writeSheet(result_data_2, "1152900177");
+    await writeSheet(result_data_4, "1152900177");
 
     let dateFormat = new Date();
 
