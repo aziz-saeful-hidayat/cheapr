@@ -3273,9 +3273,11 @@ const trackings = async function () {
           if (cell != undefined) {
             let source = cell.value;
             let bgcolor = undefined;
-
+            let textFormat = undefined;
+            console.log(cell.textFormat);
             try {
               bgcolor = cell.backgroundColor;
+              textFormat = cell.textFormat;
             } catch (e) {}
             let status = () => {
               if (JSON.stringify(bgcolor) == JSON.stringify(delivered)) {
