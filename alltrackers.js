@@ -182,6 +182,26 @@ const alltrackers = async (pk, tracks) => {
       } else {
         console.log("tracking Number not found!!!");
       }
+    } else {
+      await axios.post(
+        "https://cheapr.my.id/tracking/",
+        {
+          tracking_number: text,
+          carrier: "UPS",
+          last_updated: "",
+          status: "N",
+          activity_date: "",
+          milestone_name: "",
+          location: "",
+          est_delivery: "",
+          address: "",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
   };
   const fedex = async function ({ page, data: source }) {
