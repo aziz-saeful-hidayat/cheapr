@@ -3387,16 +3387,14 @@ const update_trackings = async function () {
         if (result.length == 1) {
           let result_data = result[0];
           if (result_data["status"] == "D") {
-            let cell = resSheet.getCellByA1(`AM${idx}`);
-            backgroundColor = cell.backgroundColor;
-            if (JSON.stringify(backgroundColor) !== JSON.stringify(delivered)) {
+            if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
+              let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = delivered;
               console.log(`AM${idx}`, data[0], "Delivered");
             }
           } else if (result_data["status"] == "I") {
-            let cell = resSheet.getCellByA1(`AM${idx}`);
-            backgroundColor = cell.backgroundColor;
-            if (JSON.stringify(backgroundColor) !== JSON.stringify(issue)) {
+            if (JSON.stringify(bgcolor) !== JSON.stringify(issue)) {
+              let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = issue;
               console.log(`AM${idx}`, data[0], "Issue");
               sendSlack(
@@ -3405,9 +3403,8 @@ const update_trackings = async function () {
               );
             }
           } else if (result_data["status"] == "T") {
-            let cell = resSheet.getCellByA1(`AM${idx}`);
-            backgroundColor = cell.backgroundColor;
-            if (JSON.stringify(backgroundColor) !== JSON.stringify(transit)) {
+            if (JSON.stringify(bgcolor) !== JSON.stringify(transit)) {
+              let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = transit;
               console.log(`AM${idx}`, data[0], "Transit");
             }
