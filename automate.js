@@ -3258,7 +3258,7 @@ const trackings = async function () {
       try {
         let rowCount = resSheet.rowCount;
         console.log(rowCount);
-        let start = 1;
+        let start = 2;
         let end = rowCount;
         // let end = 200;
         let delivered = { green: 1 };
