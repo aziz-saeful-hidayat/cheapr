@@ -3239,7 +3239,7 @@ const checker2 = async function () {
 };
 const trackings = async function () {
   let response = await axios.get(
-    "https://cheapr.my.id/scraping_status/?search=check_empty&format=json"
+    "https://cheapr.my.id/scraping_status/?search=trackings&format=json"
   );
   let result = await response.data.results;
   if (result.length > 0) {
