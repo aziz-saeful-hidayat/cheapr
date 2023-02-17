@@ -215,6 +215,7 @@ const alltrackers = async (pk, tracks) => {
       }
     );
     // get id
+    await page.waitForNavigation({ waitUntil: "networkidle2" });
     await page.waitForSelector("#shipmentIdentifier");
     let id = await page.evaluate(() => {
       let el = document.querySelector("#shipmentIdentifier");
