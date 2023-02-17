@@ -134,8 +134,9 @@ const bhphotovideo = async () => {
     }
   });
 
-  let response = await axios.get(
-    "https://cheapr.my.id/price/?in_stock=&ordering=updated_at&product__mpn=&site__name=B%26H",
+  let response = await axios.post(
+    "https://cheapr.my.id/get_mpns",
+    { site: site_name },
     {
       headers: {
         "Content-Type": "application/json",
@@ -144,9 +145,8 @@ const bhphotovideo = async () => {
   );
   let jsonData = await response.data;
   console.log(site_name, jsonData.length);
-  let result = jsonData["results"];
-  for (let i = 0; i < result.length; i++) {
-    let source = result[i]["product"]["mpn"];
+  for (let i = 0; i < jsonData.length; i++) {
+    let source = jsonData[i];
     cluster.queue(source);
   }
   // many more pages

@@ -171,29 +171,22 @@ const adorama = async () => {
     }
   });
 
-  // let response = await axios.post(
-  //   "https://cheapr.my.id/get_mpns?format=json",
-  //   { site: site_name },
-  //   {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       "Accept-Encoding": "gzip, deflate",
-  //     },
-  //   }
-  // );
-  let response = await fetch("https://cheapr.my.id/get_mpns", {
-    method: "POST", // or 'PUT'
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ site: site_name }),
-  });
-  let jsonData = await response.json();
-  console.log(site_name, jsonData);
-  // for (let i = 0; i < jsonData.length; i++) {
-  //   let source = jsonData[i]["mpn"];
-  //   cluster.queue(source);
-  // }
+  let response = await axios.post(
+    "https://cheapr.my.id/get_mpns?format=json",
+    { site: site_name },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept-Encoding": "gzip, deflate",
+      },
+    }
+  );
+  let jsonData = await response.data;
+  console.log(site_name, jsonData.length);
+  for (let i = 0; i < jsonData.length; i++) {
+    let source = jsonData[i];
+    cluster.queue(source);
+  }
   // many more pages
 
   await cluster.idle();

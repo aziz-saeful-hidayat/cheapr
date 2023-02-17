@@ -209,7 +209,7 @@ const barcodesinc = async () => {
   let jsonData = await response.data;
   console.log(site_name, jsonData.length);
   for (let i = 0; i < jsonData.length; i++) {
-    let source = jsonData[i]["mpn"];
+    let source = jsonData[i];
     cluster.queue(source);
   }
   // many more pages
