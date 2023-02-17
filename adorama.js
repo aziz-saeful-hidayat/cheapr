@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath } = require("puppeteer");
 const axios = require("axios");
-const { updateProduct } = require("./utils");
+const { updateProduct, optimizePage } = require("./utils");
 
 const PUPPETEER_OPTIONS = {
   headless: false,
@@ -12,7 +12,20 @@ const PUPPETEER_OPTIONS = {
 };
 
 const site_name = "Adorama";
-
+const checkStatus = async () => {
+  let response_status = await axios.get(
+    "https://cheapr.my.id/scraping_status/?search=adorama&format=json"
+  );
+  let result = await response_status.data.results;
+  if (result.length > 0) {
+    let data = result[0];
+    if (data["status"] != "RUNNING") {
+      await axios.patch(`https://cheapr.my.id/scraping_status/${data["pk"]}/`, {
+        status: "RUNNING",
+      });
+    }
+  }
+};
 const adorama = async () => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
@@ -48,7 +61,7 @@ const adorama = async () => {
         throw new Error("Blocked");
       }
     };
-    page.setDefaultTimeout(0);
+    await optimizePage(page);
     await page.authenticate({
       username: "user-cheapr-country-au",
       password: "Cheapr2023!",

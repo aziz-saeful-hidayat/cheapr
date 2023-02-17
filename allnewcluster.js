@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath } = require("puppeteer");
 const axios = require("axios");
-const { updateProduct, updateDataProduct } = require("./utils");
+const { optimizePage, updateDataProduct } = require("./utils");
 const path = require("path");
 const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the file saved above
 const { GoogleSpreadsheet } = require("google-spreadsheet");
@@ -36,6 +36,7 @@ const allnewcluster = async (mpns) => {
   });
   // We don't define a task and instead use own functions
   const get_bhphotovideo = async function ({ page, data: source }) {
+    await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source;
       await page.goto(
@@ -127,6 +128,7 @@ const allnewcluster = async (mpns) => {
     }
   };
   const get_adorama = async function ({ page, data: source }) {
+    await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
@@ -234,6 +236,7 @@ const allnewcluster = async (mpns) => {
     }
   };
   const get_barcodesinc = async function ({ page, data: source }) {
+    await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {

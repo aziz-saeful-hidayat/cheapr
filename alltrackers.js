@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath, KnownDevices } = require("puppeteer");
 const axios = require("axios");
-const { updateProduct } = require("./utils");
+const { optimizePage } = require("./utils");
 const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
@@ -35,7 +35,7 @@ const alltrackers = async (pk, tracks) => {
     }
   });
   const ups = async function ({ page, data: source }) {
-    page.setDefaultTimeout(0);
+    await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(
@@ -69,7 +69,13 @@ const alltrackers = async (pk, tracks) => {
         return el ? el.innerText : "";
       });
       let status = "Delivered";
-      if (!estDelivery.includes("Delivered")) {
+      if (estDelivery.includes("Pick up")) {
+        await page.waitForSelector("tr.ups-progress_current_row");
+        status = await page.evaluate(() => {
+          let el = document.querySelector("tr.ups-progress_current_row > td");
+          return el ? el.innerText.trim() : "";
+        });
+      } else if (!estDelivery.includes("Delivered")) {
         await page.waitForSelector("tr.ups-progress_current_row");
         status = await page.evaluate(() => {
           let el = document.querySelector("tr.ups-progress_current_row > td");
@@ -178,7 +184,7 @@ const alltrackers = async (pk, tracks) => {
     }
   };
   const fedex = async function ({ page, data: source }) {
-    page.setDefaultTimeout(0);
+    await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(
@@ -241,7 +247,7 @@ const alltrackers = async (pk, tracks) => {
     );
   };
   const usps = async function ({ page, data: source }) {
-    page.setDefaultTimeout(0);
+    await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(
@@ -258,7 +264,7 @@ const alltrackers = async (pk, tracks) => {
       return el ? el.innerText : "";
     });
     if (
-      !banner.includes("Label Created, not yet in system") ||
+      !banner.includes("Label Created") ||
       !banner.includes("USPS Currently Awaiting Package")
     ) {
       // get estimated delivery

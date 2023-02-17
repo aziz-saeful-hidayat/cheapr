@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath } = require("puppeteer");
 const axios = require("axios");
-const { updateProduct } = require("./utils");
+const { updateProduct, optimizePage } = require("./utils");
 
 const PUPPETEER_OPTIONS = {
   headless: true,
@@ -48,7 +48,7 @@ const barcodesinc = async () => {
         throw new Error("Blocked");
       }
     };
-    page.setDefaultTimeout(0);
+    await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
       waitUntil: "networkidle2",

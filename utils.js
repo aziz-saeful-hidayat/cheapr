@@ -64,6 +64,22 @@ const updateProduct = function (site, mpn, price, in_stock, title, url) {
     });
 };
 
+const optimizePage = async (page) => {
+  await page.setViewport({ width: 1920, height: 1080 });
+  await page.setRequestInterception(true);
+
+  page.on("request", (req) => {
+    if (
+      req.resourceType() == "stylesheet" ||
+      req.resourceType() == "font" ||
+      req.resourceType() == "image"
+    ) {
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+};
 const sendSlack = function (channel, text) {
   const data = {
     channel: channel,
@@ -86,6 +102,7 @@ const sendSlack = function (channel, text) {
 module.exports = {
   updateProduct,
   updateDataProduct,
+  optimizePage,
   sendSlack,
   retry,
   sleep,
