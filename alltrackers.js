@@ -53,6 +53,7 @@ const alltrackers = async (pk, tracks) => {
     // await page.click("#stApp_btnTrack");
     // await page.waitForNavigation({ waitUntil: "networkidle2" });
     // get tracking number
+    await page.waitForSelector("#stApp_trackingNumber");
     let [not_found] = await page.$x(
       '//span[contains(text(),"Please provide a tracking number.")]'
     );
@@ -263,10 +264,8 @@ const alltrackers = async (pk, tracks) => {
       let el = document.querySelector("h3.banner-header");
       return el ? el.innerText : "";
     });
-    if (
-      !banner.includes("Label Created") ||
-      !banner.includes("USPS Currently Awaiting Package")
-    ) {
+    let substrings = ["Label Created", "USPS Currently Awaiting Package"];
+    if (!substrings.some((v) => banner.includes(v))) {
       // get estimated delivery
       await page.waitForSelector("p.tb-status");
       status = await page.evaluate(() => {
