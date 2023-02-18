@@ -241,6 +241,8 @@ const alltrackers = async (pk, tracks) => {
         return "D";
       } else if (text == "Delivery exception") {
         return "I";
+      } else if (text == "Delay") {
+        return "I";
       } else if (text == "Package Received By FedEx") {
         return "N";
       } else {
