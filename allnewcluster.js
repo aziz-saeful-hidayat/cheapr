@@ -16,7 +16,7 @@ const PUPPETEER_OPTIONS = {
 const allnewcluster = async (mpns) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
-    concurrency: Cluster.CONCURRENCY_CONTEXT,
+    concurrency: Cluster.CONCURRENCY_BROWSER,
     maxConcurrency: 3,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
