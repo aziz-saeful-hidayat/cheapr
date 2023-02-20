@@ -3274,7 +3274,6 @@ const trackings = async function () {
             let source = cell.value;
             let bgcolor = undefined;
 
-            console.log(cell.textFormat);
             try {
               bgcolor = cell.backgroundColor;
             } catch (e) {}
@@ -3344,15 +3343,11 @@ const update_trackings = async function () {
       if (cell != undefined) {
         let source = cell.value;
         let bgcolor = undefined;
-        let textFormat = undefined;
 
         try {
           bgcolor = cell.backgroundColor;
         } catch (e) {}
-        try {
-          textFormat = cell.textFormat;
-          console.log(source, textFormat);
-        } catch (e) {}
+
         let status = () => {
           if (JSON.stringify(bgcolor) == JSON.stringify(delivered)) {
             return "delivered";
@@ -3379,7 +3374,6 @@ const update_trackings = async function () {
             idx: i,
             data: trackings,
             bgcolor: bgcolor,
-            textFormat: textFormat,
           });
         }
       }
