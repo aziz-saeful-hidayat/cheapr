@@ -3421,6 +3421,45 @@ const update_trackings = async function () {
             }
           }
         }
+      } else if (data.length > 1) {
+        let allstatus = [];
+        for (let k = 0; k < data.length; k++) {
+          let response = await axios.get(
+            `https://cheapr.my.id/tracking/?tracking_number=${data[0]}&format=json`
+          );
+          let result = await response.data.results;
+          if (result.length == 1) {
+            let result_data = result[0];
+            allstatus.push(result_data["status"]);
+          }
+        }
+        let checker = (arr) => arr.every((v) => v === "D");
+        let checker2 = (arr) => arr.some((v) => v === "T");
+        let checker3 = (arr) => arr.some((v) => v === "I");
+
+        if (checker(allstatus)) {
+          if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
+            let cell = resSheet.getCellByA1(`AM${idx}`);
+            cell.backgroundColor = delivered;
+            console.log(`AM${idx}`, data[0], "Delivered");
+          }
+        } else if (checker3(allstatus)) {
+          if (JSON.stringify(bgcolor) !== JSON.stringify(issue)) {
+            let cell = resSheet.getCellByA1(`AM${idx}`);
+            cell.backgroundColor = issue;
+            console.log(`AM${idx}`, data[0], "Issue");
+            sendSlack(
+              "#tracking-status",
+              `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AM${idx}`
+            );
+          }
+        } else if (checker2(allstatus)) {
+          if (JSON.stringify(bgcolor) !== JSON.stringify(transit)) {
+            let cell = resSheet.getCellByA1(`AM${idx}`);
+            cell.backgroundColor = transit;
+            console.log(`AM${idx}`, data[0], "Transit");
+          }
+        }
       }
     }
     await retry(
