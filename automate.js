@@ -3272,7 +3272,7 @@ const trackings = async function () {
         let tracking_numbers = [];
         for (let i = start; i < end; i++) {
           let cell = resSheet.getCellByA1(`AM${i}`);
-          let addr = resSheet.getCellByA1(`U${i}`);
+          let addr = resSheet.getCellByA1(`U${i}`).value;
 
           if (cell != undefined) {
             let source = cell.value;
