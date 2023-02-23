@@ -34,12 +34,10 @@ const alltrackers = async (pk, tracks) => {
       console.error(`Failed to crawl ${data}: ${err.message}`);
     }
   });
-  const ups = async function ({ page, data: source }) {
+  const ups = async function ({ page, data: { src: source, addr: addr } }) {
+    let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    let addr = source.addr;
-    let text =
-      typeof source.src == "string" ? source.src.trim() : source.src.toString();
     await page.goto(
       `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`,
       {
@@ -208,12 +206,10 @@ const alltrackers = async (pk, tracks) => {
       );
     }
   };
-  const fedex = async function ({ page, data: source }) {
+  const fedex = async function ({ page, data: { src: source, addr: addr } }) {
+    let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    let addr = source.addr;
-    let text =
-      typeof source.src == "string" ? source.src.trim() : source.src.toString();
     await page.goto(
       `https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`,
       {
@@ -277,12 +273,10 @@ const alltrackers = async (pk, tracks) => {
       }
     );
   };
-  const usps = async function ({ page, data: source }) {
+  const usps = async function ({ page, data: { src: source, addr: addr } }) {
+    let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    let addr = source.addr;
-    let text =
-      typeof source.src == "string" ? source.src.trim() : source.src.toString();
     await page.goto(
       `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`,
       {
