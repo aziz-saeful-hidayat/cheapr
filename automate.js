@@ -3267,9 +3267,13 @@ const trackings = async function () {
         let refunded = { red: 1 };
 
         await resSheet.loadCells(`AM${start}:AM${end}`);
+        await resSheet.loadCells(`U${start}:U${end}`);
+
         let tracking_numbers = [];
         for (let i = start; i < end; i++) {
           let cell = resSheet.getCellByA1(`AM${i}`);
+          let addr = resSheet.getCellByA1(`U${i}`);
+
           if (cell != undefined) {
             let source = cell.value;
             let bgcolor = undefined;
@@ -3302,7 +3306,7 @@ const trackings = async function () {
                 .map((e) => e.trim())
                 .filter((e) => e != "");
               console.log(trackings, track_status);
-              tracking_numbers.push({ idx: i, data: trackings });
+              tracking_numbers.push({ idx: i, data: trackings, addr: addr });
             }
           }
         }

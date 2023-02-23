@@ -37,7 +37,9 @@ const alltrackers = async (pk, tracks) => {
   const ups = async function ({ page, data: source }) {
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    let text = typeof source == "string" ? source.trim() : source.toString();
+    let addr = source.addr;
+    let text =
+      typeof source.src == "string" ? source.src.trim() : source.src.toString();
     await page.goto(
       `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`,
       {
@@ -162,6 +164,7 @@ const alltrackers = async (pk, tracks) => {
             location: location,
             est_delivery: estDelivery,
             address: address + " " + country,
+            src_address: addr,
           },
           {
             headers: {
@@ -195,6 +198,7 @@ const alltrackers = async (pk, tracks) => {
           location: "",
           est_delivery: "",
           address: "",
+          src_address: "",
         },
         {
           headers: {
@@ -207,7 +211,9 @@ const alltrackers = async (pk, tracks) => {
   const fedex = async function ({ page, data: source }) {
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    let text = typeof source == "string" ? source.trim() : source.toString();
+    let addr = source.addr;
+    let text =
+      typeof source.src == "string" ? source.src.trim() : source.src.toString();
     await page.goto(
       `https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`,
       {
@@ -262,6 +268,7 @@ const alltrackers = async (pk, tracks) => {
         location: "",
         est_delivery: "",
         address: destination,
+        src_address: addr,
       },
       {
         headers: {
@@ -273,7 +280,9 @@ const alltrackers = async (pk, tracks) => {
   const usps = async function ({ page, data: source }) {
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    let text = typeof source == "string" ? source.trim() : source.toString();
+    let addr = source.addr;
+    let text =
+      typeof source.src == "string" ? source.src.trim() : source.src.toString();
     await page.goto(
       `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`,
       {
@@ -336,6 +345,7 @@ const alltrackers = async (pk, tracks) => {
         location: "",
         est_delivery: "",
         address: "",
+        src_address: addr,
       },
       {
         headers: {
@@ -350,15 +360,15 @@ const alltrackers = async (pk, tracks) => {
     let data = tracks[i]["data"];
     for (let j = 0; j < data.length; j++) {
       if (data[j].startsWith("1Z")) {
-        cluster.queue(data[j], ups);
+        cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, ups);
       } else if (
         !data[j].startsWith("1Z") &&
         data[j].length >= 12 &&
         data[j].length <= 14
       ) {
-        cluster.queue(data[j], fedex);
+        cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, fedex);
       } else if (!data[j].startsWith("1Z") && data[j].length >= 16) {
-        cluster.queue(data[j], usps);
+        cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, usps);
       } else {
         not_criteria.push(data[j]);
       }
