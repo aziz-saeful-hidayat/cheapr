@@ -36,8 +36,8 @@ const alltrackers = async (pk, tracks) => {
   });
   const ups = async function ({ page, data: data }) {
     console.log(data);
-    let { src: source, addr: addr } = data;
-    let text = typeof source == "string" ? source.trim() : source.toString();
+    let { src, addr } = data;
+    let text = typeof src == "string" ? src.trim() : src.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
@@ -210,8 +210,8 @@ const alltrackers = async (pk, tracks) => {
   };
   const fedex = async function ({ page, data: data }) {
     console.log(data);
-    let { src: source, addr: addr } = data;
-    let text = typeof source == "string" ? source.trim() : source.toString();
+    let { src, addr } = data;
+    let text = typeof src == "string" ? src.trim() : src.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
@@ -279,8 +279,8 @@ const alltrackers = async (pk, tracks) => {
   };
   const usps = async function ({ page, data: data }) {
     console.log(data);
-    let { src: source, addr: addr } = data;
-    let text = typeof source == "string" ? source.trim() : source.toString();
+    let { src, addr } = data;
+    let text = typeof src == "string" ? src.trim() : src.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
