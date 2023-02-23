@@ -38,6 +38,7 @@ const alltrackers = async (pk, tracks) => {
     console.log(data);
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
+    console.log(src, text);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
@@ -212,6 +213,7 @@ const alltrackers = async (pk, tracks) => {
     console.log(data);
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
+    console.log(src, text);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
@@ -281,6 +283,7 @@ const alltrackers = async (pk, tracks) => {
     console.log(data);
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
+    console.log(src, text);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
