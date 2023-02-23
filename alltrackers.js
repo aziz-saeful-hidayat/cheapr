@@ -39,6 +39,8 @@ const alltrackers = async (pk, tracks) => {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
     console.log(src, text);
+    let url = `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`;
+    console.log(url);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
