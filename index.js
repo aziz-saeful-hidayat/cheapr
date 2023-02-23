@@ -13,6 +13,7 @@ const {
   checker2,
   trackings,
   update_trackings,
+  ebay,
 } = require("./automate");
 const { adorama } = require("./adorama");
 const { barcodesinc } = require("./barcodesinc");
@@ -118,6 +119,11 @@ app.get("/trackings/", function (req, res) {
   trackings();
   res.send({ message: "Ok" });
 });
+app.get("/ebay/", function (req, res) {
+  ebay();
+  res.send({ message: "Ok" });
+});
+
 app.get("/update_trackings/", function (req, res) {
   update_trackings();
   res.send({ message: "Ok" });

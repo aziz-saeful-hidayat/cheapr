@@ -3335,7 +3335,7 @@ const update_trackings = async function () {
     let transit = { red: 1, green: 1 };
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
-
+    let not_started = { red: 1, green: 1, blue: 1 };
     await resSheet.loadCells(`AM${start}:AM${end}`);
     let tracking_numbers = [];
     for (let i = start; i < end; i++) {
@@ -3413,6 +3413,12 @@ const update_trackings = async function () {
               cell.backgroundColor = transit;
               console.log(`AM${idx}`, data[0], "Transit");
             }
+          } else if (result_data["status"] == "N") {
+            if (JSON.stringify(bgcolor) !== JSON.stringify(not_started)) {
+              let cell = resSheet.getCellByA1(`AM${idx}`);
+              cell.backgroundColor = not_started;
+              console.log(`AM${idx}`, data[0], "Not Started");
+            }
           }
         }
       } else if (data.length > 1) {
@@ -3468,6 +3474,240 @@ const update_trackings = async function () {
     console.log(e);
   }
 };
+
+const ebay = async function () {
+  const doc = new GoogleSpreadsheet(
+    "1DrG1p3is3QqScFgBboIRFrgwb4Gio9T6MbX1D75R9fM"
+  );
+  // const updateFtcresult = await updateFtc();
+  // console.log(updateFtcresult);
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo(); // loads document properties and worksheets
+  console.log(doc.title);
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:H40");
+  settingSheet.getCell(10, 1).value = "";
+  settingSheet.getCell(10, 2).value = "RUNNING";
+  settingSheet.getCell(10, 4).value = "";
+
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
+  puppeteer.use(StealthPlugin());
+  puppeteer.use(
+    RecaptchaPlugin({
+      provider: { id: "2captcha", token: "e49a37d85049c9d99179375601a90e16" },
+      visualFeedback: true, // colorize reCAPTCHAs (violet = detected, green = solved)
+    })
+  );
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: ["--no-sandbox"],
+    executablePath: executablePath(),
+    userDataDir: "./ebay_data",
+  });
+  const page = await browser.newPage();
+  const checkOtp = async () => {
+    await settingSheet.loadCells("A1:G20");
+    let otp = settingSheet.getCell(4, 1).value;
+    let length = 0;
+    while (!otp && length != 6) {
+      console.log("Waiting OTP", otp);
+      await settingSheet.loadCells("A1:G20");
+      otp = settingSheet.getCell(4, 1).value;
+      if (otp) {
+        length = otp.toString().length;
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    let otpText = otp.toString();
+    console.log("OTP found:", otp);
+    settingSheet.getCell(4, 1).value = "OTP Found";
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    settingSheet.getCell(4, 1).value = "";
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    return otpText;
+  };
+
+  const check2fa = async () => {
+    let url = await page.url();
+    if (url.includes("/ap/mfa")) {
+      settingSheet.getCell(4, 2).value = "Need OTP";
+      await retry(
+        () => Promise.all([settingSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
+      await new Promise((r) => setTimeout(r, 2000));
+      let otp = await checkOtp();
+      await page.type("#auth-mfa-otpcode", otp);
+      await page.waitForTimeout(2000);
+      await page.click("#auth-mfa-remember-device");
+      await page.waitForTimeout(2000);
+      await page.click("#auth-signin-button");
+      console.log("Clicking login");
+      await page.waitForNavigation({
+        waitUntil: "networkidle2",
+      });
+      url = await page.url();
+      if (url.includes("/ap/mfa")) {
+        settingSheet.getCell(4, 2).value = "Wrong OTP, Stopped";
+        await retry(
+          () => Promise.all([settingSheet.saveUpdatedCells()]),
+          5,
+          true,
+          10000
+        );
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+  };
+  const checkhcaptcha = async () => {
+    let url = await page.url();
+    if (url.includes("/ap/mfa")) {
+      settingSheet.getCell(4, 2).value = "Need OTP";
+      await retry(
+        () => Promise.all([settingSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
+      await new Promise((r) => setTimeout(r, 2000));
+      let otp = await checkOtp();
+      await page.type("#auth-mfa-otpcode", otp);
+      await page.waitForTimeout(2000);
+      await page.click("#auth-mfa-remember-device");
+      await page.waitForTimeout(2000);
+      await page.click("#auth-signin-button");
+      console.log("Clicking login");
+      await page.waitForNavigation({
+        waitUntil: "networkidle2",
+      });
+      url = await page.url();
+      if (url.includes("/ap/mfa")) {
+        settingSheet.getCell(4, 2).value = "Wrong OTP, Stopped";
+        await retry(
+          () => Promise.all([settingSheet.saveUpdatedCells()]),
+          5,
+          true,
+          10000
+        );
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+  };
+  try {
+    await page.setJavaScriptEnabled(true);
+    await page.setDefaultNavigationTimeout(0);
+    await page.goto("https://www.ebay.com/signin/", {
+      waitUntil: "networkidle0",
+    });
+    let url = await page.url();
+    console.log(url);
+    if (url.includes("/signin/")) {
+      console.log("Trying login");
+      let username = settingSheet.getCell(10, 6).value;
+      let password = settingSheet.getCell(10, 7).value;
+      await page.type("#userid", username);
+      await page.click("#signin-continue-btn");
+      await page.waitForNavigation({
+        waitUntil: "networkidle0",
+      });
+      await page.type("#pass", password);
+      await page.click("#sgnBt");
+      console.log("Clicking login");
+
+      await page.waitForNavigation({
+        waitUntil: "networkidle0",
+      });
+      await check2fa();
+      let url = await page.url();
+      console.log(url);
+
+      if (url.includes("/authorization/select-account")) {
+        await page.waitForTimeout(5000);
+
+        await page.waitForSelector(
+          "#picker-container > div > div.picker-body > div > div:nth-child(1) > div > div:nth-child(4) > button > div > div.picker-name"
+        );
+        await page.click(
+          "#picker-container > div > div.picker-body > div > div:nth-child(1) > div > div:nth-child(1) > button > div > div.picker-name"
+        );
+        await page.waitForTimeout(5000);
+        await page.click(
+          "#picker-container > div > div.picker-body > div > div:nth-child(3) > div > div:nth-child(3) > button > div > div"
+        );
+        await page.waitForTimeout(5000);
+        await page.click(
+          "#picker-container > div > div.picker-footer > div > button"
+        );
+      }
+    }
+
+    let dateFormat = new Date();
+
+    settingSheet.getCell(4, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(4, 2).value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    // await browser.close();
+  } catch (e) {
+    console.log(e);
+    console.log("Amazon Aziz Error");
+    let dateFormat = new Date();
+
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(4, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+
+    settingSheet.getCell(4, 2).value = "ERROR";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    // await browser.close();
+  }
+};
 module.exports = {
   sellerAmazon,
   sellerAmazonCH,
@@ -3481,4 +3721,5 @@ module.exports = {
   checker2,
   trackings,
   update_trackings,
+  ebay,
 };

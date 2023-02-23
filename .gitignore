@@ -1,6 +1,8 @@
 node_modules/
 user_data/
 user_data_ch/
+ebay_data/
+
 
 **/.cache/
 .cache/
