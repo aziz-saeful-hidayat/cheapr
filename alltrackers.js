@@ -35,6 +35,7 @@ const alltrackers = async (pk, tracks) => {
     }
   });
   const ups = async function ({ page, data: data }) {
+    console.log(data);
     let { src: source, addr: addr } = data;
     let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
@@ -208,6 +209,7 @@ const alltrackers = async (pk, tracks) => {
     }
   };
   const fedex = async function ({ page, data: data }) {
+    console.log(data);
     let { src: source, addr: addr } = data;
     let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
@@ -276,6 +278,7 @@ const alltrackers = async (pk, tracks) => {
     );
   };
   const usps = async function ({ page, data: data }) {
+    console.log(data);
     let { src: source, addr: addr } = data;
     let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
