@@ -34,7 +34,8 @@ const alltrackers = async (pk, tracks) => {
       console.error(`Failed to crawl ${data}: ${err.message}`);
     }
   });
-  const ups = async function ({ page, data: { src: source, addr: addr } }) {
+  const ups = async function ({ page, data: data }) {
+    let { src: source, addr: addr } = data;
     let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
@@ -206,7 +207,8 @@ const alltrackers = async (pk, tracks) => {
       );
     }
   };
-  const fedex = async function ({ page, data: { src: source, addr: addr } }) {
+  const fedex = async function ({ page, data: data }) {
+    let { src: source, addr: addr } = data;
     let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
@@ -273,7 +275,8 @@ const alltrackers = async (pk, tracks) => {
       }
     );
   };
-  const usps = async function ({ page, data: { src: source, addr: addr } }) {
+  const usps = async function ({ page, data: data }) {
+    let { src: source, addr: addr } = data;
     let text = typeof source == "string" ? source.trim() : source.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
