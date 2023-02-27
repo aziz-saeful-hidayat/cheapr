@@ -175,7 +175,7 @@ const bsrcluster = async (keyword) => {
 
       let make = "";
       let [make_el] = await page.$x(
-        "//*[contains(text(),'Brand')]//following-sibling::*"
+        "//*[starts-with(text(),'Brand')]//following-sibling::*"
       );
       if (make_el) {
         make = await page.evaluate((make_el) => make_el.innerText, make_el);
@@ -204,7 +204,7 @@ const bsrcluster = async (keyword) => {
       }
       let manufacturer = "";
       let [manufacturer_el] = await page.$x(
-        "//*[contains(text(),'Manufacturer')]//following-sibling::*"
+        "//*[starts-with(text(),'Manufacturer')]//following-sibling::*"
       );
       if (manufacturer_el) {
         manufacturer = await page.evaluate(
