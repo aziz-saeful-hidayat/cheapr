@@ -10,7 +10,7 @@ const { GoogleSpreadsheet } = require("google-spreadsheet");
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: ["--no-sandbox"],
+  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
 };
 const bsrcluster = async (keyword) => {
@@ -38,6 +38,8 @@ const bsrcluster = async (keyword) => {
   const extract_departments = async function (source) {
     const browser = await puppeteer.launch(PUPPETEER_OPTIONS);
     const page = await browser.newPage();
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+
     // await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
 
     let products = [];
@@ -162,6 +164,7 @@ const bsrcluster = async (keyword) => {
   const extract_page = async function ({ page, data: source }) {
     // await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await optimizePage(page);
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       let clean_text = text.split("ref=")[0];
