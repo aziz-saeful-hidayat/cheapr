@@ -164,7 +164,7 @@ const bsrcluster = async (keyword) => {
   const extract_page = async function ({ page, data: source }) {
     let text = typeof source == "string" ? source.trim() : source.toString();
     let clean_text = text.split("ref=")[0];
-    let asin_src = clean_text.split("/")[5];
+    let asin_src = clean_text.split("/")[3];
     let check_url = `https://cheapr.my.id/amazon_product/?search=${asin_src}`;
     console.log(check_url);
     let response = await axios.get(check_url);
