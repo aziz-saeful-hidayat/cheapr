@@ -40,6 +40,8 @@ const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36";
 
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/static", express.static(path.join(__dirname, "public")));
 
 app.get("/amazon/", function (req, res) {
@@ -134,6 +136,15 @@ app.get("/bsrcluster/:keyword", function (req, res) {
   if (req.keyword) {
     console.log(req.keyword);
     bsrcluster(req.keyword);
+  }
+  res.send({ message: "Ok" });
+});
+
+app.post("/bsr/", function (req, res) {
+  const keyword = req.body.keyword;
+  if (keyword) {
+    console.log(keyword);
+    bsrcluster(keyword);
   }
   res.send({ message: "Ok" });
 });
