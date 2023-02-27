@@ -162,12 +162,16 @@ const bsrcluster = async (keyword) => {
     }
   };
   const extract_page = async function ({ page, data: source }) {
-    // await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    await optimizePage(page);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    if (source) {
-      let text = typeof source == "string" ? source.trim() : source.toString();
-      let clean_text = text.split("ref=")[0];
+    let text = typeof source == "string" ? source.trim() : source.toString();
+    let clean_text = text.split("ref=")[0];
+    let asin_src = clean_text.split("/")[5];
+    let check_url = `https://cheapr.my.id/amazon_product/?search=${asin_src}`;
+    console.log(check_url);
+    let response = await axios.get(check_url);
+    let result = await response.data.results;
+    if (result.length < 1) {
+      await optimizePage(page);
+      await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
       await page.goto(`https://www.amazon.com${clean_text}`, {
         waitUntil: "networkidle2",
       });
