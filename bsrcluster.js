@@ -164,7 +164,8 @@ const bsrcluster = async (keyword) => {
     await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
-      await page.goto(`https://www.amazon.com${text}`, {
+      let clean_text = text.split("ref=")[0];
+      await page.goto(`https://www.amazon.com${clean_text}`, {
         waitUntil: "networkidle2",
       });
       let h1 = "";
