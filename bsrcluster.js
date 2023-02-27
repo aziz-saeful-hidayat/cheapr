@@ -9,7 +9,7 @@ const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the f
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 
 const PUPPETEER_OPTIONS = {
-  headless: false,
+  headless: true,
   args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
 };
