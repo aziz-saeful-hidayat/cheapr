@@ -165,7 +165,7 @@ const bsrcluster = async (keyword) => {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.amazon.com${text}`, {
-        waitUntil: "networkidle0",
+        waitUntil: "networkidle2",
       });
       let h1 = "";
       let [h1_el] = await page.$x('//*[@id="productTitle"]');
