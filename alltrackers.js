@@ -46,7 +46,7 @@ const alltrackers = async (pk, tracks) => {
     await page.goto(
       `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`,
       {
-        waitUntil: "domcontentloaded",
+        waitUntil: "networkidle2",
       }
     );
     // await page.goto(`https://www.ups.com/track?loc=en_US&requester=ST/`, {
@@ -221,7 +221,7 @@ const alltrackers = async (pk, tracks) => {
     await page.goto(
       `https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`,
       {
-        waitUntil: "domcontentloaded",
+        waitUntil: "networkidle2",
       }
     );
     // get id
@@ -291,7 +291,7 @@ const alltrackers = async (pk, tracks) => {
     await page.goto(
       `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`,
       {
-        waitUntil: "domcontentloaded",
+        waitUntil: "networkidle2",
       }
     );
     let status = "Pre-Shipment";
