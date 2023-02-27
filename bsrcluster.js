@@ -102,7 +102,7 @@ const bsrcluster = async (keyword) => {
         );
         console.log(next_page);
         await page.goto(`https://www.amazon.com${next_page}`, {
-          waitUntil: "networkidle2",
+          waitUntil: "domcontentloaded",
         });
         await get_products();
       }
@@ -118,7 +118,7 @@ const bsrcluster = async (keyword) => {
                 r * 10000 ? r * 10000 : ""
               }-${(r + 1) * 10000 == 100000 ? "" : (r + 1) * 10000}&dc`,
               {
-                waitUntil: "networkidle2",
+                waitUntil: "domcontentloaded",
               }
             );
 
@@ -173,7 +173,7 @@ const bsrcluster = async (keyword) => {
       await optimizePage(page);
       await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
       await page.goto(`https://www.amazon.com${clean_text}`, {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
       });
       let h1 = "";
       let [h1_el] = await page.$x('//*[@id="productTitle"]');

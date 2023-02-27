@@ -42,7 +42,7 @@ const allnewcluster = async (mpns) => {
       await page.goto(
         `https://www.bhphotovideo.com/c/search?q=${text}&sts=ma`,
         {
-          waitUntil: "networkidle2",
+          waitUntil: "domcontentloaded",
         }
       );
       let products = await page.$$eval(
@@ -87,7 +87,7 @@ const allnewcluster = async (mpns) => {
       if (products.length > 0) {
         link1 = `https://www.bhphotovideo.com${products[0]}`;
         await page.goto(link1, {
-          waitUntil: "networkidle2",
+          waitUntil: "domcontentloaded",
         });
         price = await page.evaluate(() => {
           let el = document.querySelector('div[data-selenium="pricingPrice');
@@ -132,7 +132,7 @@ const allnewcluster = async (mpns) => {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
       });
       let [not_found] = await page.$x(
         '//h1[contains(text(),"Sorry, we didn")]'
@@ -173,7 +173,7 @@ const allnewcluster = async (mpns) => {
       if (products.length > 0) {
         link1 = products[0];
         await page.goto(link1, {
-          waitUntil: "networkidle2",
+          waitUntil: "domcontentloaded",
         });
       }
       let empty_data = {
@@ -240,7 +240,7 @@ const allnewcluster = async (mpns) => {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
       });
       await page.waitForSelector(
         "#global-header > div.search-area > form > input.searchfield"
@@ -264,7 +264,7 @@ const allnewcluster = async (mpns) => {
         "#global-header > div.search-area > form > input.searchbutton"
       );
 
-      await page.waitForNavigation({ waitUntil: "networkidle2" });
+      await page.waitForNavigation({ waitUntil: "domcontentloaded" });
 
       let [not_found] = await page.$x(
         '//p[contains(text(),"We could not find a product to match your search criteria.")]'
