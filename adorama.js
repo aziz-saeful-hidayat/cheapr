@@ -68,7 +68,7 @@ const adorama = async () => {
     });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(`https://www.adorama.com/`, {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
     });
     await checkBlock();
     await page.waitForSelector("#searchDesktop > input");
@@ -80,7 +80,7 @@ const adorama = async () => {
       let el = document.querySelector("#searchDesktop > button");
       el.click();
     });
-    await page.waitForNavigation({ waitUntil: "networkidle2" });
+    await page.waitForNavigation({ waitUntil: "domcontentloaded" });
     await checkBlock();
 
     let [not_found] = await page.$x('//h1[contains(text(),"Sorry, we didn")]');
@@ -120,7 +120,7 @@ const adorama = async () => {
     if (products.length > 0) {
       link1 = products[0];
       await page.goto(link1, {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
       });
       await checkBlock();
     }

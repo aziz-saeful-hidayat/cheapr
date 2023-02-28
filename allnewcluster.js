@@ -130,10 +130,40 @@ const allnewcluster = async (mpns) => {
   const get_adorama = async function ({ page, data: source }) {
     await optimizePage(page);
     if (source) {
+      const checkBlock = async () => {
+        let block = await page.evaluate(() => {
+          let el = document.querySelector("#px-captcha");
+          return el ? true : false;
+        });
+        let [blocked] = await page.$x(
+          '//*[contains(text(),"Before we continue")]'
+        );
+        if (block || blocked) {
+          throw new Error("Blocked");
+        }
+      };
+      await optimizePage(page);
+      await page.authenticate({
+        username: "user-cheapr-country-au",
+        password: "Cheapr2023!",
+      });
       let text = typeof source == "string" ? source.trim() : source.toString();
-      await page.goto(`https://www.adorama.com/l/?searchinfo=${text}`, {
+      await page.goto(`https://www.adorama.com/`, {
         waitUntil: "networkidle2",
       });
+      await checkBlock();
+      await page.waitForSelector("#searchDesktop > input");
+      await page.evaluate(
+        (text) =>
+          (document.querySelector("#searchDesktop > input").value = text),
+        text
+      );
+      await page.evaluate(() => {
+        let el = document.querySelector("#searchDesktop > button");
+        el.click();
+      });
+      await page.waitForNavigation({ waitUntil: "networkidle2" });
+      await checkBlock();
       let [not_found] = await page.$x(
         '//h1[contains(text(),"Sorry, we didn")]'
       );

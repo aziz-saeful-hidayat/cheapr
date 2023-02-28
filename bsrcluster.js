@@ -9,7 +9,7 @@ const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the f
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
+  headless: false,
   args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
 };
@@ -53,12 +53,14 @@ const bsrcluster = async (keyword) => {
           counter_el
         );
 
-        const max = counter
-          .split(" of ")[1]
-          .replace("over", "")
-          .replace("results for", "")
-          .replace(",", "")
-          .trim();
+        const max = counter.includes(" of ")
+          ? counter
+              .split(" of ")[1]
+              .replace("over", "")
+              .replace("results for", "")
+              .replace(",", "")
+              .trim()
+          : counter.split(" results for ")[0].replace(",", "").trim();
         console.log("MAX RESULT: ", max);
         return counter;
       } else {
@@ -147,7 +149,7 @@ const bsrcluster = async (keyword) => {
     let categories = ["1064954", "172282", "16310091"];
     for (let c = 0; c < categories.length; c++) {
       await page.goto(
-        `https://www.amazon.com/s?k=${keyword}&rh=n%3A${categories}%2Cp_n_availability%3A2661601011&dc`,
+        `https://www.amazon.com/s?k=${keyword}&rh=n%3A${categories[c]}%2Cp_n_availability%3A2661601011&dc`,
         {
           waitUntil: "domcontentloaded",
         }
@@ -169,7 +171,13 @@ const bsrcluster = async (keyword) => {
     console.log(check_url);
     let response = await axios.get(check_url);
     let result = await response.data.results;
-    if (result.length < 1) {
+    let crawl = false;
+    if (result.length > 0) {
+      if (result[0]["manufacturer"] == "") {
+        crawl = true;
+      }
+    }
+    if (result.length < 1 || crawl) {
       await optimizePage(page);
       await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
       await page.goto(`https://www.amazon.com${clean_text}`, {
@@ -183,10 +191,21 @@ const bsrcluster = async (keyword) => {
 
       let make = "";
       let [make_el] = await page.$x(
+        "//*[starts-with(text(),' Brand')]//following-sibling::*"
+      );
+
+      let [make_el2] = await page.$x(
         "//*[starts-with(text(),'Brand')]//following-sibling::*"
+      );
+      let [make_el3] = await page.$x(
+        "//*[starts-with(text(),'Brand')]//parent::td/following-sibling::*"
       );
       if (make_el) {
         make = await page.evaluate((make_el) => make_el.innerText, make_el);
+      } else if (make_el2) {
+        make = await page.evaluate((make_el2) => make_el2.innerText, make_el2);
+      } else if (make_el3) {
+        make = await page.evaluate((make_el3) => make_el3.innerText, make_el3);
       }
 
       let model = "";
@@ -212,12 +231,28 @@ const bsrcluster = async (keyword) => {
       }
       let manufacturer = "";
       let [manufacturer_el] = await page.$x(
+        "//*[starts-with(text(),' Manufacturer')]//following-sibling::*"
+      );
+      let [manufacturer_el2] = await page.$x(
         "//*[starts-with(text(),'Manufacturer')]//following-sibling::*"
+      );
+      let [manufacturer_el3] = await page.$x(
+        "//*[starts-with(text(),'Manufacturer')]//parent::td//following-sibling::*"
       );
       if (manufacturer_el) {
         manufacturer = await page.evaluate(
           (manufacturer_el) => manufacturer_el.innerText,
           manufacturer_el
+        );
+      } else if (manufacturer_el2) {
+        manufacturer = await page.evaluate(
+          (manufacturer_el2) => manufacturer_el2.innerText,
+          manufacturer_el2
+        );
+      } else if (manufacturer_el3) {
+        manufacturer = await page.evaluate(
+          (manufacturer_el3) => manufacturer_el3.innerText,
+          manufacturer_el3
         );
       }
       let price = "";
