@@ -67,6 +67,7 @@ const updateProduct = function (site, mpn, price, in_stock, title, url) {
 const optimizePage = async (page) => {
   await page.setDefaultTimeout(0);
   await page.setViewport({ width: 1920, height: 1080 });
+  await page.removeAllListeners("request");
   await page.setRequestInterception(true);
 
   page.on("request", (req) => {
