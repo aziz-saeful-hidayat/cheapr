@@ -21,8 +21,8 @@ const alltrackers = async (pk, tracks) => {
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    // retryLimit: 3,
-    // retryDelay: 5000,
+    retryLimit: 2,
+    retryDelay: 5000,
     timeout: 100000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {

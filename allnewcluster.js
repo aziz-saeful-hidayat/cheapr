@@ -21,7 +21,7 @@ const allnewcluster = async (mpns) => {
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    retryLimit: 10,
+    retryLimit: 2,
     retryDelay: 30000,
     timeout: 100000,
   });
