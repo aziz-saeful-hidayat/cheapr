@@ -97,10 +97,24 @@ const sendSlack = function (channel, text) {
       console.error("Error:", error);
     });
 };
+
+const checkBlock = async (page) => {
+  let block = await page.evaluate(() => {
+    let el = document.querySelector("#px-captcha");
+    return el ? true : false;
+  });
+  let [blocked] = await page.$x(
+    '//*[contains(text(),"Before we continue")]'
+  );
+  if (block || blocked) {
+    throw new Error("Blocked");
+  }
+};
 module.exports = {
   updateProduct,
   updateDataProduct,
   optimizePage,
+  checkBlock,
   sendSlack,
   retry,
   sleep,

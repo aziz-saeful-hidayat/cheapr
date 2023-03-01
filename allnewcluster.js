@@ -3,14 +3,14 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath } = require("puppeteer");
 const axios = require("axios");
-const { optimizePage, updateDataProduct } = require("./utils");
+const { optimizePage, updateDataProduct, checkBlock } = require("./utils");
 const path = require("path");
 const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the file saved above
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: ["--no-sandbox"],
+  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
 };
 const allnewcluster = async (mpns) => {
@@ -37,6 +37,7 @@ const allnewcluster = async (mpns) => {
   // We don't define a task and instead use own functions
   const get_bhphotovideo = async function ({ page, data: source }) {
     await optimizePage(page);
+
     if (source) {
       let text = typeof source == "string" ? source.trim() : source;
       await page.goto(
@@ -45,6 +46,7 @@ const allnewcluster = async (mpns) => {
           waitUntil: "networkidle2",
         }
       );
+      await checkBlock(page);
       let products = await page.$$eval(
         'div[data-selenium="miniProductPage"]',
         (trs, text) => {
@@ -89,6 +91,7 @@ const allnewcluster = async (mpns) => {
         await page.goto(link1, {
           waitUntil: "networkidle2",
         });
+        await checkBlock(page);
         price = await page.evaluate(() => {
           let el = document.querySelector('div[data-selenium="pricingPrice');
           return el ? el.innerText : "";
@@ -130,18 +133,6 @@ const allnewcluster = async (mpns) => {
   const get_adorama = async function ({ page, data: source }) {
     await optimizePage(page);
     if (source) {
-      const checkBlock = async () => {
-        let block = await page.evaluate(() => {
-          let el = document.querySelector("#px-captcha");
-          return el ? true : false;
-        });
-        let [blocked] = await page.$x(
-          '//*[contains(text(),"Before we continue")]'
-        );
-        if (block || blocked) {
-          throw new Error("Blocked");
-        }
-      };
       await optimizePage(page);
       await page.authenticate({
         username: "user-cheapr-country-au",
@@ -151,7 +142,7 @@ const allnewcluster = async (mpns) => {
       await page.goto(`https://www.adorama.com/`, {
         waitUntil: "networkidle2",
       });
-      await checkBlock();
+      await checkBlock(page);
       await page.waitForSelector("#searchDesktop > input");
       await page.evaluate(
         (text) =>
@@ -163,7 +154,7 @@ const allnewcluster = async (mpns) => {
         el.click();
       });
       await page.waitForNavigation({ waitUntil: "networkidle2" });
-      await checkBlock();
+      await checkBlock(page);
       let [not_found] = await page.$x(
         '//h1[contains(text(),"Sorry, we didn")]'
       );
