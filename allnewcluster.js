@@ -263,6 +263,7 @@ const allnewcluster = async (mpns) => {
       await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
         waitUntil: "networkidle2",
       });
+      await checkBlock(page);
       await page.waitForSelector(
         "#global-header > div.search-area > form > input.searchfield"
       );
@@ -286,7 +287,7 @@ const allnewcluster = async (mpns) => {
       );
 
       await page.waitForNavigation({ waitUntil: "networkidle2" });
-
+      await checkBlock(page);
       let [not_found] = await page.$x(
         '//p[contains(text(),"We could not find a product to match your search criteria.")]'
       );
