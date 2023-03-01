@@ -44,7 +44,7 @@ const allnewcluster = async (mpns) => {
       await page.goto(
         `https://www.bhphotovideo.com/c/search?q=${text}&sts=ma`,
         {
-          waitUntil: "networkidle2",
+          waitUntil: "domcontentloaded",
         }
       );
       await checkBlock(page);
@@ -90,7 +90,7 @@ const allnewcluster = async (mpns) => {
       if (products.length > 0) {
         link1 = `https://www.bhphotovideo.com${products[0]}`;
         await page.goto(link1, {
-          waitUntil: "networkidle2",
+          waitUntil: "domcontentloaded",
         });
         await checkBlock(page);
         price = await page.evaluate(() => {
@@ -141,7 +141,7 @@ const allnewcluster = async (mpns) => {
       });
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.adorama.com/`, {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
       });
       await checkBlock(page);
       await page.waitForSelector("#searchDesktop > input");
@@ -154,7 +154,7 @@ const allnewcluster = async (mpns) => {
         let el = document.querySelector("#searchDesktop > button");
         el.click();
       });
-      await page.waitForNavigation({ waitUntil: "networkidle2" });
+      await page.waitForNavigation({ waitUntil: "domcontentloaded" });
       await checkBlock(page);
       let [not_found] = await page.$x(
         '//h1[contains(text(),"Sorry, we didn")]'
@@ -195,7 +195,7 @@ const allnewcluster = async (mpns) => {
       if (products.length > 0) {
         link1 = products[0];
         await page.goto(link1, {
-          waitUntil: "networkidle2",
+          waitUntil: "domcontentloaded",
         });
       }
       let empty_data = {
@@ -263,7 +263,7 @@ const allnewcluster = async (mpns) => {
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
       });
       await checkBlock(page);
       await page.waitForSelector(
@@ -288,7 +288,7 @@ const allnewcluster = async (mpns) => {
         "#global-header > div.search-area > form > input.searchbutton"
       );
 
-      await page.waitForNavigation({ waitUntil: "networkidle2" });
+      await page.waitForNavigation({ waitUntil: "domcontentloaded" });
       await checkBlock(page);
       let [not_found] = await page.$x(
         '//p[contains(text(),"We could not find a product to match your search criteria.")]'
