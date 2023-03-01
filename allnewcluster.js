@@ -36,6 +36,7 @@ const allnewcluster = async (mpns) => {
   });
   // We don't define a task and instead use own functions
   const get_bhphotovideo = async function ({ page, data: source }) {
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await optimizePage(page);
 
     if (source) {
@@ -135,7 +136,7 @@ const allnewcluster = async (mpns) => {
     if (source) {
       await optimizePage(page);
       await page.authenticate({
-        username: "user-cheapr-country-au",
+        username: "cheapr",
         password: "Cheapr2023!",
       });
       let text = typeof source == "string" ? source.trim() : source.toString();
@@ -257,6 +258,7 @@ const allnewcluster = async (mpns) => {
     }
   };
   const get_barcodesinc = async function ({ page, data: source }) {
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
