@@ -12,7 +12,9 @@ const {
   checker,
   checker2,
   trackings,
+  booktrackings,
   update_trackings,
+  update_booktrackings,
   ebay,
 } = require("./automate");
 const { adorama } = require("./adorama");
