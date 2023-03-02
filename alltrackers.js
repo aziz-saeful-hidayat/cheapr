@@ -8,7 +8,15 @@ const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
+  args: [
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--disable-setuid-sandbox",
+    "--no-first-run",
+    "--no-sandbox",
+    "--no-zygote",
+    "--proxy-server=dc.smartproxy.com:10000",
+  ],
   executablePath: executablePath(),
   // userDataDir: "./user_data",
 };
@@ -23,7 +31,7 @@ const alltrackers = async (pk, tracks) => {
     monitor: true,
     retryLimit: 2,
     retryDelay: 5000,
-    timeout: 100000,
+    timeout: 1000000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {

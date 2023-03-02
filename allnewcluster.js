@@ -10,7 +10,15 @@ const { GoogleSpreadsheet } = require("google-spreadsheet");
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
+  args: [
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--disable-setuid-sandbox",
+    "--no-first-run",
+    "--no-sandbox",
+    "--no-zygote",
+    "--proxy-server=dc.smartproxy.com:10000",
+  ],
   executablePath: executablePath(),
 };
 const allnewcluster = async (mpns) => {
