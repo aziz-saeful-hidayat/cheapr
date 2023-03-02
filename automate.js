@@ -3358,7 +3358,7 @@ const booktrackings = async function () {
           let acell = resSheet.getCellByA1(`A${i}`).value;
           let cell = resSheet.getCellByA1(`T${i}`);
           let addr = resSheet.getCellByA1(`G${i}`).value;
-          if (acell.includes("Delivered (Closed)")) {
+          if (acell && acell.includes("Delivered (Closed)")) {
             break;
           }
           if (cell != undefined) {
