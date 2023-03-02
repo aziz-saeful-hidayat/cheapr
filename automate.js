@@ -3322,7 +3322,7 @@ const trackings = async function () {
 };
 const booktrackings = async function () {
   let response = await axios.get(
-    "https://cheapr.my.id/scraping_status/?search=booktrackings&format=json"
+    "https://cheapr.my.id/scraping_status/?search=trackings&format=json"
   );
   let result = await response.data.results;
   if (result.length > 0) {
