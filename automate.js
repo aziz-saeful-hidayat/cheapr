@@ -3268,12 +3268,17 @@ const trackings = async function () {
 
         await resSheet.loadCells(`AM${start}:AM${end}`);
         await resSheet.loadCells(`U${start}:U${end}`);
+        await resSheet.loadCells(`I${start}:I${end}`);
 
         let tracking_numbers = [];
         for (let i = start; i < end; i++) {
           let cell = resSheet.getCellByA1(`AM${i}`);
           let addr = resSheet.getCellByA1(`U${i}`).value;
+          let acell = resSheet.getCellByA1(`I${i}`).value;
 
+          if (typeof acell == "string" && acell.includes("Delivered")) {
+            break;
+          }
           if (cell != undefined) {
             let source = cell.value;
             let bgcolor = undefined;
@@ -3355,9 +3360,10 @@ const booktrackings = async function () {
 
         let tracking_numbers = [];
         for (let i = start; i < end; i++) {
-          let acell = resSheet.getCellByA1(`A${i}`).value;
           let cell = resSheet.getCellByA1(`T${i}`);
           let addr = resSheet.getCellByA1(`G${i}`).value;
+          let acell = resSheet.getCellByA1(`A${i}`).value;
+
           if (
             typeof acell == "string" &&
             acell.includes("Delivered (Closed)")
