@@ -3348,6 +3348,7 @@ const booktrackings = async function () {
         let transit = { red: 1, green: 1 };
         let issue = { red: 1, blue: 1 };
         let refunded = { red: 1 };
+        await resSheet.loadCells(`A${start}:A${end}`);
 
         await resSheet.loadCells(`T${start}:T${end}`);
         await resSheet.loadCells(`G${start}:G${end}`);
