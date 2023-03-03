@@ -29,9 +29,9 @@ const allnewcluster = async (mpns) => {
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    retryLimit: 2,
-    retryDelay: 30000,
-    timeout: 100000,
+    // retryLimit: 2,
+    // retryDelay: 30000,
+    timeout: 60000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {
