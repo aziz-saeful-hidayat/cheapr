@@ -4336,12 +4336,12 @@ const ebay = async function () {
         return el ? el.innerText : "";
       });
       console.log(user_info);
-      if (!user_info.includes("stockpileusa")) {
+      if (!user_info.includes(username)) {
         await page.type("#userid", username);
         await page.click("#signin-continue-btn");
         await page.waitForTimeout(10000);
       }
-
+      await checkhcaptcha();
       await page.type("#pass", password);
       await page.click("#sgnBt");
       console.log("Clicking login");
