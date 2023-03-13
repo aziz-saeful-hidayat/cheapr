@@ -16,6 +16,7 @@ const {
   update_trackings,
   update_booktrackings,
   ebay,
+  ppcAmazon,
 } = require("./automate");
 const { adorama } = require("./adorama");
 const { barcodesinc } = require("./barcodesinc");
@@ -49,6 +50,11 @@ app.use("/static", express.static(path.join(__dirname, "public")));
 app.get("/amazon/", function (req, res) {
   sellerAmazon();
   res.send({ result: "Amazon Automation started" });
+});
+
+app.get("/ppcamazon/", function (req, res) {
+  ppcAmazon();
+  res.send({ result: "PPC Amazon Automation started" });
 });
 
 app.get("/walmart/", function (req, res) {
