@@ -4483,7 +4483,7 @@ const ebay = async function () {
       true,
       10000
     );
-    // await browser.close();
+    await browser.close();
   } catch (e) {
     console.log(e);
     console.log("Amazon Aziz Error");
@@ -4508,7 +4508,7 @@ const ebay = async function () {
       true,
       10000
     );
-    // await browser.close();
+    await browser.close();
   }
 };
 module.exports = {
