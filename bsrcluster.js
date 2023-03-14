@@ -320,8 +320,19 @@ const bsrcluster = async (keyword) => {
       });
     }
   };
-
-  await extract_departments();
+  let response = await axios.get(
+    "https://cheapr.my.id/scraping_status/?search=bsr&format=json"
+  );
+  let result = await response.data.results;
+  if (result.length > 0) {
+    let data = result[0];
+    if (data["status"] != "RUNNING") {
+      await extract_departments();
+      await axios.patch(`https://cheapr.my.id/scraping_status/${data["pk"]}/`, {
+        status: "COMPLETED",
+      });
+    }
+  }
 
   await cluster.idle();
   await cluster.close();
