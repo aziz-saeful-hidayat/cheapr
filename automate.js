@@ -1,3 +1,4 @@
+const fs = require("fs");
 var path = require("path");
 const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the file saved above
 const axios = require("axios");
@@ -1718,6 +1719,347 @@ const walmart = async function () {
       10000
     );
     await browser.close();
+  } catch (e) {
+    console.log(e);
+    console.log("Walmart Error");
+    let dateFormat = new Date();
+
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(7, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+
+    settingSheet.getCell(7, 2).value = "ERROR";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    // await page.goto(
+    //   "https://communityminerals-f099fc.pipedrive.com/auth/logout",
+    //   {
+    //     waitUntil: "networkidle0",
+    //   }
+    // );
+    // newSheet.getCell(1, 1).value = "ERROR";
+    // let date = new Date();
+    // newSheet.getCell(1, 0).value = date.toLocaleString("en-US", cstOptions);
+    // await retry(
+    //   () => Promise.all([newSheet.saveUpdatedCells()]),
+    //   5,
+    //   true,
+    //   10000
+    // );
+    // await retry(
+    //   () => Promise.all([newSheet.saveUpdatedCells()]),
+    //   5,
+    //   true,
+    //   10000
+    // );
+    // await browser.close();
+  }
+};
+
+const ppcWalmart = async function () {
+  const directory = "download";
+
+  fs.readdir(directory, (err, files) => {
+    if (err) throw err;
+
+    for (const file of files) {
+      fs.unlink(path.join(directory, file), (err) => {
+        if (err) throw err;
+      });
+    }
+  });
+  const doc = new GoogleSpreadsheet(
+    "1DrG1p3is3QqScFgBboIRFrgwb4Gio9T6MbX1D75R9fM"
+  );
+  // const updateFtcresult = await updateFtc();
+  // console.log(updateFtcresult);
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo(); // loads document properties and worksheets
+  console.log(doc.title);
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:H40");
+  settingSheet.getCell(7, 1).value = "";
+  settingSheet.getCell(7, 2).value = "RUNNING";
+  settingSheet.getCell(7, 4).value = "";
+
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
+  puppeteer.use(StealthPlugin());
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: ["--no-sandbox"],
+    executablePath: executablePath(),
+  });
+  const page = await browser.newPage();
+  const downloadPath = path.resolve("./download");
+
+  try {
+    const client = await page.target().createCDPSession();
+    await client.send("Page.setDownloadBehavior", {
+      behavior: "allow",
+      downloadPath: downloadPath,
+    });
+    await page.setViewport({ width: 1024, height: 1600 });
+    await page.setJavaScriptEnabled(true);
+    await page.setDefaultNavigationTimeout(0);
+    await page.goto("https://seller.walmart.com/", {
+      waitUntil: "networkidle0",
+    });
+    let username = settingSheet.getCell(7, 6).value;
+    let password = settingSheet.getCell(7, 7).value;
+
+    await page.type('input[data-automation-id="uname"]', username);
+    await page.type('input[data-automation-id="pwd"]', password);
+    await page.waitForTimeout(2000);
+
+    await page.click('button[data-automation-id="loginBtn"]');
+
+    await page.waitForTimeout(5000);
+
+    await page.waitForFunction("window.location.pathname == '/home'", {
+      timeout: 500000,
+    });
+
+    const grabData = async () => {
+      await page.goto(`https://advertising.walmart.com/view/home`);
+      await page.click('button[data-automation-id="button-login-as-seller"]');
+      await page.waitForFunction("window.location.pathname == '/view/home'", {
+        timeout: 500000,
+      });
+      await page.goto(
+        `https://advertising.walmart.com/view/report/custom/advertiser/260112`,
+        { waitUntil: "networkidle2" }
+      );
+      const selector = "div.icon-label-container > div.saved-report-name";
+
+      const rect = await page.evaluate((selector) => {
+        const element = document.querySelector(selector);
+        if (!element) return null;
+        const { x, y } = element.getBoundingClientRect();
+        return { x, y };
+      }, selector);
+      if (rect) {
+        console.log(rect);
+
+        await page.mouse.click(rect.x, rect.y, { clickCount: 2, delay: 100 });
+        await page.click(selector, { clickCount: 2, delay: 100 });
+      } else {
+        console.error("Element Not Found");
+      }
+      const finalResponse = await page.waitForResponse(
+        (response) =>
+          response.url() ===
+            "https://advertising.walmart.com/custom-report?advertiserId=260112" &&
+          response
+            .request()
+            .postData()
+            .startsWith(
+              '{"dataCube":"wpa_daily_summary_by_item_v2","expression":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"apply","operand":{"op":"literal","value":'
+            ),
+        20
+      );
+      const finalResponse2 = await page.waitForResponse(
+        (response) =>
+          response.url() ===
+            "https://advertising.walmart.com/custom-report?advertiserId=260112" &&
+          response.request().postData().includes("item_id"),
+        20
+      );
+      let responseJson = await finalResponse2.json();
+      let data = responseJson["result"]["data"][0]["SPLIT"]["data"];
+      let results = [];
+      for (let d = 0; d < data.length; d++) {
+        let order = data[d];
+        if (order["sum_14_day_quantity_total"] != 0) {
+          let items = order["SPLIT"]["data"];
+          for (let t = 0; t < items.length; t++) {
+            let item = items[t];
+            if (item["sum_14_day_quantity_total"] != 0) {
+              results.push({
+                time: order["__time"]["start"],
+                item_id: item["item_id"],
+                qty: item["sum_14_day_quantity_total"],
+                total: item["sum_14_day_revenue_total"],
+              });
+            }
+          }
+        }
+      }
+      console.log(results);
+      for (let r = 0; r < results.length; r++) {
+        let result = results[r];
+        await page.goto(
+          `https://seller.walmart.com/items-and-inventory/manage-items?filters=%7B%22itemId%22%3A%7B%22op%22%3A%22contains%22%2C%22value%22%3A%5B%7B%22key%22%3A%22val%22%2C%22value%22%3A%22${result["item_id"]}%22%7D%5D%7D%7D`,
+          {
+            waitUntil: "networkidle0",
+          }
+        );
+        let [sku] = await page.$x('//div[contains(text(),"SKU: ")]');
+        let sku_text = await page.evaluate(
+          (sku) => (sku ? sku.innerText : ""),
+          sku
+        );
+        console.log(sku_text);
+        if (sku) {
+          let response = await axios.get(
+            `https://cheapr.my.id/caproduct/?sku=${sku_text
+              .replace("SKU: ", "")
+              .trim()}`
+          );
+          let api_data = response.data.results;
+          console.log(response.data);
+          if (api_data.length > 0) {
+            let ca_data = api_data[0];
+
+            let payload = {
+              product: ca_data["pk"],
+              date: result["time"].slice(0, 10),
+              price: result["total"] / result["qty"],
+              qty: result["qty"],
+              platform: "Walmart",
+              order_number: "",
+            };
+            console.log(payload);
+
+            let post_res = await axios.post(
+              "https://cheapr.my.id/ppc_order/",
+              (data = payload)
+            );
+            console.log(post_res.data);
+          }
+        }
+      }
+    };
+    let writeSheet = async (result, id) => {
+      let resSheet = doc.sheetsById[id];
+      await resSheet.loadCells("A1:U1000");
+      resSheet.getCell(2, 2).value = result["rating"];
+      resSheet.getCell(4, 3).value = result["percOtd"] / 100;
+      resSheet.getCell(5, 3).value = result["perCanRate"] / 100;
+      resSheet.getCell(6, 3).value = result["percVtr"] / 100;
+      resSheet.getCell(7, 3).value = result["percSRR"] / 100;
+      resSheet.getCell(8, 3).value = result["perRefundRate"] / 100;
+      await retry(
+        () => Promise.all([resSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
+      let data = result["data"];
+      // let parseTexint = (text) => {
+      //   if (text) {
+      //     if (text.includes(".")) {
+      //       if (text.startsWith(".")) {
+      //         return parseFloat(`0${text}`);
+      //       } else {
+      //         return parseFloat(text);
+      //       }
+      //     } else {
+      //       return parseInt(text);
+      //     }
+      //   } else {
+      //     return text;
+      //   }
+      // };
+      for (let n = 0; n < data.length; n++) {
+        let row_data = data[n];
+        // let dateFormat = new Date(parseInt(row_data[0]));
+        // let date_sh =
+        //   dateFormat.getDate() +
+        //   "/" +
+        //   (dateFormat.getMonth() + 1) +
+        //   "/" +
+        //   dateFormat.getFullYear();
+        resSheet.getCell(12 + n, 0).value = row_data["rptDt"];
+        resSheet.getCell(12 + n, 1).value = row_data["TotalGMV"];
+        resSheet.getCell(12 + n, 2).value = row_data["GMVPercentageChange"];
+        resSheet.getCell(12 + n, 3).value =
+          row_data["TotalGMVWithoutCommission"];
+        resSheet.getCell(12 + n, 4).value = row_data["TotalUnits"];
+        resSheet.getCell(12 + n, 5).value = row_data["TotalAuthOrders"];
+        resSheet.getCell(12 + n, 6).value = row_data["AUR"];
+        if (n % 10 == 0) {
+          await retry(
+            () => Promise.all([resSheet.saveUpdatedCells()]),
+            5,
+            true,
+            10000
+          );
+        }
+      }
+      await retry(
+        () => Promise.all([resSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
+    };
+    await grabData();
+
+    // for (let i = 0; i < result.length; i++) {
+    //   newSheet.getCell(i + 4, 0).value = result[i]["name"];
+    //   newSheet.getCell(i + 4, 1).value = result[i]["unique"];
+    //   newSheet.getCell(i + 4, 2).value = result[i]["serial"];
+    //   newSheet.getCell(i + 4, 3).value = result[i]["mailing"];
+    //   newSheet.getCell(i + 4, 4).value = result[i]["county"];
+    //   newSheet.getCell(i + 4, 5).value = result[i]["id"];
+    //   newSheet.getCell(i + 4, 6).value = result[i]["deal"];
+    // }
+    // console.log("PipeDrive Done");
+    // newSheet.getCell(1, 1).value = "OK";
+    // let date = new Date();
+    // newSheet.getCell(1, 0).value = date.toLocaleString("en-US", cstOptions);
+    // await retry(
+    //   () => Promise.all([newSheet.saveUpdatedCells()]),
+    //   5,
+    //   true,
+    //   10000
+    // );
+    let dateFormat = new Date();
+
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(7, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+
+    settingSheet.getCell(7, 2).value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    // await browser.close();
   } catch (e) {
     console.log(e);
     console.log("Walmart Error");
@@ -4528,4 +4870,5 @@ module.exports = {
   update_booktrackings,
   ebay,
   ppcAmazon,
+  ppcWalmart,
 };

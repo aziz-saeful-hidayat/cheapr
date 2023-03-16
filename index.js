@@ -17,6 +17,7 @@ const {
   update_booktrackings,
   ebay,
   ppcAmazon,
+  ppcWalmart,
 } = require("./automate");
 const { adorama } = require("./adorama");
 const { barcodesinc } = require("./barcodesinc");
@@ -60,6 +61,11 @@ app.get("/ppcamazon/", function (req, res) {
 app.get("/walmart/", function (req, res) {
   walmart();
   res.send({ result: "Walmart Automation started" });
+});
+
+app.get("/ppcwalmart/", function (req, res) {
+  ppcWalmart();
+  res.send({ result: "PPC Walmart Automation started" });
 });
 
 app.get("/commision/", function (req, res) {
