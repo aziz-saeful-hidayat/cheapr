@@ -20,7 +20,32 @@ const PUPPETEER_OPTIONS = {
   executablePath: executablePath(),
   // userDataDir: "./user_data",
 };
-
+let get_status = (text) => {
+  if (text == "Delivered") {
+    return "D";
+  } else if (
+    text == "Delivery exception" ||
+    text == "Shipment exception" ||
+    text == "Delay" ||
+    text == "Alert" ||
+    text == "Returned"
+  ) {
+    return "I";
+  } else if (
+    text == "In Transit" ||
+    text == "In Transit from Origin Processing" ||
+    text == "Out For Delivery" ||
+    text == "On the Way" ||
+    text == "Moving Through Network" ||
+    text == "Delivery Attempt" ||
+    text == "Second Delivery Attempted" ||
+    text == "Processing at Destination"
+  ) {
+    return "T";
+  } else {
+    return "N";
+  }
+};
 const alltrackers = async (pk, tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
@@ -147,17 +172,6 @@ const alltrackers = async (pk, tracks) => {
         );
         return el ? el.innerText.replace("Last Updated:", "") : "";
       });
-      let get_status = (text) => {
-        if (text == "Delivered") {
-          return "D";
-        } else if (text == "Returned") {
-          return "I";
-        } else if (text == "Label Created") {
-          return "N";
-        } else {
-          return "T";
-        }
-      };
       if (trackingNumber !== "") {
         milestone = milestone.split("\n");
         let milestone_name = milestone[0];
@@ -254,19 +268,6 @@ const alltrackers = async (pk, tracks) => {
           .textContent
     );
     console.log(id, status, destination);
-    let get_status = (text) => {
-      if (text == "Delivered") {
-        return "D";
-      } else if (text == "Delivery exception") {
-        return "I";
-      } else if (text == "Delay") {
-        return "I";
-      } else if (text == "Package Received By FedEx") {
-        return "N";
-      } else {
-        return "T";
-      }
-    };
     let stts = get_status(status);
     await axios.post(
       "https://cheapr.my.id/tracking/",
@@ -333,17 +334,7 @@ const alltrackers = async (pk, tracks) => {
     //     elements[elements.length - 1].querySelector("div > div:nth-child(4)")
     //       .textContent
     // );
-    let get_status = (text) => {
-      if (text == "Delivered") {
-        return "D";
-      } else if (text == "Alert") {
-        return "I";
-      } else if (text == "Pre-Shipment") {
-        return "N";
-      } else {
-        return "T";
-      }
-    };
+
     let stts = get_status(status);
     console.log(id, status);
     await axios.post(
