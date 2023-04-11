@@ -68,10 +68,8 @@ const alltrackers = async (pk, tracks) => {
     }
   });
   const ups = async function ({ page, data: data }) {
-    console.log(data);
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
-    console.log(src, text);
     let url = `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`;
     console.log(url);
     await optimizePage(page);
@@ -197,16 +195,6 @@ const alltrackers = async (pk, tracks) => {
             },
           }
         );
-
-        console.log("tracking Number => " + trackingNumber);
-        console.log("est delivery  => " + estDelivery);
-        console.log("address  => " + address + " " + country);
-        console.log("activity Date  => " + activityDateTime);
-        console.log("milestone name  => " + milestone_name);
-        console.log("location  => " + location);
-        console.log("last Updated  => " + lastUpdated);
-
-        console.log(trackingNumber, status, address + ", " + country);
       } else {
         console.log("tracking Number not found!!!");
       }
@@ -234,12 +222,12 @@ const alltrackers = async (pk, tracks) => {
     }
   };
   const fedex = async function ({ page, data: data }) {
-    console.log(data);
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
-    console.log(src, text);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    console.log(`https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`);
+
     await page.goto(
       `https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`,
       {
@@ -267,7 +255,6 @@ const alltrackers = async (pk, tracks) => {
         elements[elements.length - 1].querySelector("div > div:nth-child(4)")
           .textContent
     );
-    console.log(id, status, destination);
     let stts = get_status(status);
     await axios.post(
       "https://cheapr.my.id/tracking/",
@@ -291,12 +278,13 @@ const alltrackers = async (pk, tracks) => {
     );
   };
   const usps = async function ({ page, data: data }) {
-    console.log(data);
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
-    console.log(src, text);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    console.log(
+      `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`
+    );
     await page.goto(
       `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`,
       {
@@ -336,7 +324,6 @@ const alltrackers = async (pk, tracks) => {
     // );
 
     let stts = get_status(status);
-    console.log(id, status);
     await axios.post(
       "https://cheapr.my.id/tracking/",
       {
@@ -367,11 +354,16 @@ const alltrackers = async (pk, tracks) => {
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, ups);
       } else if (
         !data[j].startsWith("1Z") &&
+        !data[j].startsWith("LA") &&
         data[j].length >= 12 &&
         data[j].length <= 14
       ) {
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, fedex);
-      } else if (!data[j].startsWith("1Z") && data[j].length >= 16) {
+      } else if (
+        !data[j].startsWith("1Z") &&
+        data[j].length >= 16 &&
+        !data[j].startsWith("LA")
+      ) {
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, usps);
       } else {
         not_criteria.push(data[j]);

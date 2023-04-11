@@ -4044,7 +4044,7 @@ const trackings = async function () {
   let result = await response.data.results;
   if (result.length > 0) {
     let data = result[0];
-    if (data["status"] != "RUNNING") {
+    if (data["status"] != "PAUSED") {
       await axios.patch(`https://cheapr.my.id/scraping_status/${data["pk"]}/`, {
         status: "RUNNING",
       });
@@ -4235,7 +4235,7 @@ const update_trackings = async function () {
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
     let not_started = { red: 1, green: 1, blue: 1 };
-    await resSheet.loadCells(`AM${start}:AM${end}`);
+    await resSheet.loadCells(`AL${start}:AN${end}`);
     let tracking_numbers = [];
     for (let i = start; i < end; i++) {
       let cell = resSheet.getCellByA1(`AM${i}`);
@@ -4292,12 +4292,16 @@ const update_trackings = async function () {
           let result_data = result[0];
           if (result_data["status"] == "D") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
+              let carrier = resSheet.getCellByA1(`AL${idx}`);
+              carrier.value = result_data["carrier"];
               let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = delivered;
               console.log(`AM${idx}`, data[0], "Delivered");
             }
           } else if (result_data["status"] == "I") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(issue)) {
+              let carrier = resSheet.getCellByA1(`AL${idx}`);
+              carrier.value = result_data["carrier"];
               let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = issue;
               console.log(`AM${idx}`, data[0], "Issue");
@@ -4308,12 +4312,16 @@ const update_trackings = async function () {
             }
           } else if (result_data["status"] == "T") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(transit)) {
+              let carrier = resSheet.getCellByA1(`AL${idx}`);
+              carrier.value = result_data["carrier"];
               let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = transit;
               console.log(`AM${idx}`, data[0], "Transit");
             }
           } else if (result_data["status"] == "N") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(not_started)) {
+              let carrier = resSheet.getCellByA1(`AL${idx}`);
+              carrier.value = result_data["carrier"];
               let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = not_started;
               console.log(`AM${idx}`, data[0], "Not Started");
@@ -4329,6 +4337,8 @@ const update_trackings = async function () {
           let result = await response.data.results;
           if (result.length == 1) {
             let result_data = result[0];
+            let carrier = resSheet.getCellByA1(`AL${idx}`);
+            carrier.value = result_data["carrier"];
             allstatus.push(result_data["status"]);
           }
         }
