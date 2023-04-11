@@ -171,6 +171,6 @@ app.post("/bsr/", function (req, res) {
   res.send({ message: "Ok" });
 });
 // Making Express listen on port 3000
-app.listen(process.env.PORT || 3000, function () {
-  console.log(`Running on port 3000.`);
+app.listen(process.env.PORT || 80, function () {
+  console.log(`Running on port 80.`);
 });
