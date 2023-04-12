@@ -90,7 +90,6 @@ const alltrackers = async (pk, tracks) => {
     // await page.click("#stApp_btnTrack");
     // await page.waitForNavigation({ waitUntil: "networkidle2" });
     // get tracking number
-    await page.waitForSelector("#stApp_trackingNumber");
     let [not_found] = await page.$x(
       '//span[contains(text(),"Please provide a tracking number.")]'
     );
@@ -101,7 +100,6 @@ const alltrackers = async (pk, tracks) => {
         return el ? el.innerText : "";
       });
       // get estimated delivery
-      await page.waitForSelector("track-details-estimation");
       let estDelivery = await page.evaluate(() => {
         let el = document.querySelector("track-details-estimation");
         return el ? el.innerText : "";
@@ -435,12 +433,12 @@ const alltrackers = async (pk, tracks) => {
   const cpc = async function ({ page, data: data }) {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
-    let url = `https://www.canadapost-postescanada.ca/track-reperage/en#/search?searchFor=${text}`;
+    let url = `https://www.canadapost-postescanada.ca/track-reperage/en#/details/${text}`;
     console.log(url);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
-      `https://www.canadapost-postescanada.ca/track-reperage/en#/search?searchFor=${text}`,
+      `https://www.canadapost-postescanada.ca/track-reperage/en#/details/${text}`,
       {
         waitUntil: "networkidle2",
       }
@@ -454,17 +452,25 @@ const alltrackers = async (pk, tracks) => {
     // await page.click("#stApp_btnTrack");
     // await page.waitForNavigation({ waitUntil: "networkidle2" });
     // get tracking number
-    await page.waitForSelector("#stApp_trackingNumber");
+    await page.waitForSelector("#search_result");
+    let trackingNumber = await page.evaluate(() => {
+      let el = document.querySelector("#search_result > span");
+      return el ? el.innerText : "";
+    });
     let [not_found] = await page.$x(
-      '//span[contains(text(),"Please provide a tracking number.")]'
+      '//span[contains(text(),"We didn’t find an item associated with this number")]'
     );
     if (!not_found) {
-      await page.waitForSelector(
-        "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(1)"
-      );
       let status = await page.evaluate(() => {
         let el = document.querySelector(
           "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(1)"
+        );
+        return el ? el.innerText : "";
+      });
+
+      let milestone = await page.evaluate(() => {
+        let el = document.querySelector(
+          "#progressRow:nth-child(1) > td:nth-child(3) > div:nth-child(1)"
         );
         return el ? el.innerText : "";
       });
@@ -474,96 +480,45 @@ const alltrackers = async (pk, tracks) => {
       );
       let estDelivery = await page.evaluate(() => {
         let el = document.querySelector(
-          "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(2)n"
+          "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(2)"
         );
         return el ? el.innerText : "";
       });
+      let stts = "N";
       let eta_date = null;
       let delivery_date = null;
-      if (estDelivery && status.trim() == "Delivered") {
-        delivery_date = moment(estDelivery.trim()).format("YYYY-MM-DD");
-      } else {
-        await page.waitForSelector("tr.ups-progress_current_row");
-        status = await page.evaluate(() => {
-          let el = document.querySelector("tr.ups-progress_current_row > td");
-          return el ? el.innerText.trim() : "";
-        });
-        console.log(estDelivery);
-        let month_date = estDelivery
-          .split(",")[1]
-          .split("by")[0]
-          .split("at")[0]
-          .trim();
-        console.log(month_date);
-        eta_date = moment(month_date, "MMMM D").format("YYYY-MM-DD");
-        console.log(eta_date);
+      if (milestone.includes("Delivered")) {
+        stts = "D";
       }
-      // get status delivery
-
-      // get address
-      await page.waitForSelector("#stApp_txtAddress");
-      let address = await page.evaluate(() => {
-        let el = document.querySelector("#stApp_txtAddress");
-        return el ? el.innerText : "";
-      });
-      // get address country
-      await page.waitForSelector("#stApp_txtCountry");
-
-      let country = await page.evaluate(() => {
-        let el = document.querySelector("#stApp_txtCountry");
-        return el ? el.innerText : "";
-      });
-
-      // click view details
-      // await page.waitForNavigation({ waitUntil: "networkidle2" });
-      await page.waitForSelector("#st_App_View_Details");
-      await page.evaluate(() => {
-        let el = document.querySelector("#st_App_View_Details");
-        el.click();
-      });
-      // click tab Shipment Progress
-      await page.waitForSelector("#tab_1");
-      await page.click("#tab_1");
-
-      // get time activity
-      await page.waitForSelector("#stApp_activitiesdateTime0");
-      let activityDateTime = await page.evaluate(() => {
-        let el = document.querySelector("#stApp_activitiesdateTime0");
-        return el ? el.innerText.replace(/(\r\n|\n|\r)/gm, " ") : "";
-      });
-
-      // get milestone and location
-      await page.waitForSelector("#stApp_milestoneActivityLocation0");
-      let milestone = await page.evaluate(() => {
-        let el = document.querySelector("#stApp_milestoneActivityLocation0");
-        return el ? el.innerText : "";
-      });
-
-      // get last updated
-      await page.waitForSelector(
-        "#upsAng2Modal > div > div > div.modal-body.ups-form_wrap > div > div.ups-group"
-      );
-      let lastUpdated = await page.evaluate(() => {
-        let el = document.querySelector(
-          "#upsAng2Modal > div > div > div.modal-body.ups-form_wrap > div > div.ups-group"
+      if (milestone.includes("Electronic information submitted by shipper")) {
+        stts = "N";
+      }
+      if (estDelivery && status.trim() == "Delivered") {
+        delivery_date = moment(estDelivery.split("at")[0].trim()).format(
+          "YYYY-MM-DD"
         );
-        return el ? el.innerText.replace("Last Updated:", "") : "";
-      });
+      } else if (
+        !milestone.includes("Electronic information submitted by shipper") &&
+        !estDelivery.includes("Item delayed")
+      ) {
+        eta_date = moment(estDelivery.split(",")[1].trim(), "MMM. D").format(
+          "YYYY-MM-DD"
+        );
+        stts = "T";
+      } else if (estDelivery.includes("Item delayed")) {
+        stts = "I";
+      }
       if (trackingNumber !== "") {
-        milestone = milestone?.split("\n");
-        let milestone_name = milestone[0];
-        let location = milestone[1];
-        let status = get_status(milestone_name);
         let payload = {
           tracking_number: trackingNumber,
-          carrier: "UPS",
-          last_updated: lastUpdated,
-          status: status,
-          activity_date: activityDateTime,
-          milestone_name: milestone_name,
-          location: location,
+          carrier: "CPC",
+          last_updated: "",
+          status: stts,
+          activity_date: "",
+          milestone_name: milestone,
+          location: "",
           est_delivery: estDelivery,
-          address: address + " " + country,
+          address: "",
           src_address: addr,
         };
         if (eta_date) {
@@ -631,6 +586,12 @@ const alltrackers = async (pk, tracks) => {
         !data[j].startsWith("LA")
       ) {
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, usps);
+      } else if (
+        data[j].startsWith("LA") ||
+        data[j].startsWith("CA") ||
+        data[j].length == 16
+      ) {
+        cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, cpc);
       } else {
         not_criteria.push(data[j]);
       }
