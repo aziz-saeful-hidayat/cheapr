@@ -28,6 +28,7 @@ const { gshopping } = require("./gshopping");
 const { fedex } = require("./fedex");
 const { ups } = require("./ups");
 const { bsrcluster } = require("./bsrcluster");
+const { tester } = require("./tester");
 
 const app = express(); // Initializing Express
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -131,6 +132,13 @@ app.get("/ups/", function (req, res) {
   ups();
   res.send({ message: "Ok" });
 });
+
+app.get("/tester/", function (req, res) {
+  // Retrieve the tag from our URL path
+  tester();
+  res.send({ message: "Ok" });
+});
+
 app.get("/trackings/", function (req, res) {
   // Retrieve the tag from our URL path
   trackings();

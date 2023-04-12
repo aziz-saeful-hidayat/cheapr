@@ -4,6 +4,7 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath, KnownDevices } = require("puppeteer");
 const axios = require("axios");
 const { optimizePage } = require("./utils");
+const moment = require("moment");
 const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
@@ -106,18 +107,50 @@ const alltrackers = async (pk, tracks) => {
         return el ? el.innerText : "";
       });
       let status = "Delivered";
-      if (estDelivery.includes("Pick up")) {
+      let eta_date = null;
+      let delivery_date = null;
+      if (estDelivery && estDelivery.includes("Pick up")) {
         await page.waitForSelector("tr.ups-progress_current_row");
         status = await page.evaluate(() => {
           let el = document.querySelector("tr.ups-progress_current_row > td");
           return el ? el.innerText.trim() : "";
         });
-      } else if (!estDelivery.includes("Delivered")) {
+      } else if (
+        estDelivery &&
+        estDelivery.includes("Estimated delivery") &&
+        !estDelivery.includes(
+          "The delivery date will be provided as soon as possible"
+        )
+      ) {
         await page.waitForSelector("tr.ups-progress_current_row");
         status = await page.evaluate(() => {
           let el = document.querySelector("tr.ups-progress_current_row > td");
           return el ? el.innerText.trim() : "";
         });
+        console.log(estDelivery);
+        let month_date = estDelivery
+          .split(",")[1]
+          .split("by")[0]
+          .split("at")[0]
+          .trim();
+        console.log(month_date);
+        eta_date = moment(month_date, "MMMM D").format("YYYY-MM-DD");
+        console.log(eta_date);
+      } else if (estDelivery && estDelivery.includes("Delivered")) {
+        await page.waitForSelector("tr.ups-progress_current_row");
+        status = await page.evaluate(() => {
+          let el = document.querySelector("tr.ups-progress_current_row > td");
+          return el ? el.innerText.trim() : "";
+        });
+        console.log(estDelivery);
+        let month_date = estDelivery
+          .split(",")[1]
+          .split("by")[0]
+          .split("at")[0]
+          .trim();
+        console.log(month_date);
+        delivery_date = moment(month_date, "MMMM D").format("YYYY-MM-DD");
+        console.log(delivery_date);
       }
       // get status delivery
 
@@ -171,54 +204,65 @@ const alltrackers = async (pk, tracks) => {
         return el ? el.innerText.replace("Last Updated:", "") : "";
       });
       if (trackingNumber !== "") {
-        milestone = milestone.split("\n");
+        milestone = milestone?.split("\n");
         let milestone_name = milestone[0];
         let location = milestone[1];
         let status = get_status(milestone_name);
-        await axios.post(
+        let payload = {
+          tracking_number: trackingNumber,
+          carrier: "UPS",
+          last_updated: lastUpdated,
+          status: status,
+          activity_date: activityDateTime,
+          milestone_name: milestone_name,
+          location: location,
+          est_delivery: estDelivery,
+          address: address + " " + country,
+          src_address: addr,
+        };
+        if (eta_date) {
+          payload = { ...payload, eta_date: eta_date };
+        }
+        if (delivery_date) {
+          payload = { ...payload, delivery_date: delivery_date };
+        }
+        await axios
+          .post("https://cheapr.my.id/tracking/", payload, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+          .catch(function (error) {
+            console.log(error.toJSON());
+          });
+      } else {
+        console.log("tracking Number not found!!!");
+      }
+    } else {
+      await axios
+        .post(
           "https://cheapr.my.id/tracking/",
           {
-            tracking_number: trackingNumber,
+            tracking_number: text,
             carrier: "UPS",
-            last_updated: lastUpdated,
-            status: status,
-            activity_date: activityDateTime,
-            milestone_name: milestone_name,
-            location: location,
-            est_delivery: estDelivery,
-            address: address + " " + country,
-            src_address: addr,
+            last_updated: "",
+            status: "N",
+            activity_date: "",
+            milestone_name: "",
+            location: "",
+            est_delivery: "",
+            address: "",
+            src_address: "",
           },
           {
             headers: {
               "Content-Type": "application/json",
             },
           }
-        );
-      } else {
-        console.log("tracking Number not found!!!");
-      }
-    } else {
-      await axios.post(
-        "https://cheapr.my.id/tracking/",
-        {
-          tracking_number: text,
-          carrier: "UPS",
-          last_updated: "",
-          status: "N",
-          activity_date: "",
-          milestone_name: "",
-          location: "",
-          est_delivery: "",
-          address: "",
-          src_address: "",
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+        )
+        .catch(function (error) {
+          console.log(error.toJSON());
+        });
     }
   };
   const fedex = async function ({ page, data: data }) {
@@ -255,27 +299,53 @@ const alltrackers = async (pk, tracks) => {
         elements[elements.length - 1].querySelector("div > div:nth-child(4)")
           .textContent
     );
+    // get eta
+    let eta_date = null;
+    let delivery_date = null;
+    await page.waitForSelector("span.deliveryDateTextBetween");
+    let estDelivery = await page.evaluate(() => {
+      let el = document.querySelector("span.deliveryDateTextBetween");
+      return el ? el.innerText : "";
+    });
+
+    if (estDelivery) {
+      let month_date = estDelivery.split("by")[0].split("at")[0].trim();
+      console.log(month_date);
+      if (status.trim() == "Delivered") {
+        delivery_date = moment(month_date, "M/D/YYYY").format("YYYY-MM-DD");
+      } else {
+        eta_date = moment(month_date, "M/D/YYYY").format("YYYY-MM-DD");
+      }
+    }
+
     let stts = get_status(status);
-    await axios.post(
-      "https://cheapr.my.id/tracking/",
-      {
-        tracking_number: id,
-        carrier: "FedEx",
-        last_updated: "",
-        activity_date: "",
-        milestone_name: status,
-        status: stts,
-        location: "",
-        est_delivery: "",
-        address: destination,
-        src_address: addr,
-      },
-      {
+    let payload = {
+      tracking_number: id,
+      carrier: "FedEx",
+      last_updated: "",
+      activity_date: "",
+      milestone_name: status,
+      status: stts,
+      location: "",
+      est_delivery: "",
+      address: destination,
+      src_address: addr,
+    };
+    if (eta_date) {
+      payload = { ...payload, eta_date: eta_date };
+    }
+    if (delivery_date) {
+      payload = { ...payload, delivery_date: delivery_date };
+    }
+    await axios
+      .post("https://cheapr.my.id/tracking/", payload, {
         headers: {
           "Content-Type": "application/json",
         },
-      }
-    );
+      })
+      .catch(function (error) {
+        console.log(error.toJSON());
+      });
   };
   const usps = async function ({ page, data: data }) {
     let { src, addr } = data;
@@ -323,27 +393,223 @@ const alltrackers = async (pk, tracks) => {
     //       .textContent
     // );
 
+    // get date
+    await page.waitForSelector("p.tb-date");
+    let tb_date = await page.$$eval(
+      "p.tb-date",
+      (elements) => elements[0].textContent
+    );
     let stts = get_status(status);
-    await axios.post(
-      "https://cheapr.my.id/tracking/",
-      {
-        tracking_number: id,
-        carrier: "USPS",
-        last_updated: "",
-        activity_date: "",
-        milestone_name: status,
-        status: stts,
-        location: "",
-        est_delivery: "",
-        address: "",
-        src_address: addr,
+    let payload = {
+      tracking_number: id,
+      carrier: "USPS",
+      last_updated: "",
+      activity_date: "",
+      milestone_name: status,
+      status: stts,
+      location: "",
+      est_delivery: "",
+      address: "",
+      src_address: addr,
+    };
+    let eta_date = null;
+    let delivery_date = null;
+    if (status.trim() == "Delivered") {
+      delivery_date = moment(tb_date.trim(), "MMMM D, YYYY").format(
+        "YYYY-MM-DD"
+      );
+    } else {
+      eta_date = moment(tb_date.trim(), "MMMM D, YYYY").format("YYYY-MM-DD");
+    }
+    if (status == "Delivered") {
+      payload = { ...payload, delivery_date: delivery_date };
+    } else if (eta_date) {
+      payload = { ...payload, eta_date: eta_date };
+    }
+    await axios.post("https://cheapr.my.id/tracking/", payload, {
+      headers: {
+        "Content-Type": "application/json",
       },
+    });
+  };
+  const cpc = async function ({ page, data: data }) {
+    let { src, addr } = data;
+    let text = typeof src == "string" ? src.trim() : src.toString();
+    let url = `https://www.canadapost-postescanada.ca/track-reperage/en#/search?searchFor=${text}`;
+    console.log(url);
+    await optimizePage(page);
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.goto(
+      `https://www.canadapost-postescanada.ca/track-reperage/en#/search?searchFor=${text}`,
       {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        waitUntil: "networkidle2",
       }
     );
+    // await page.goto(`https://www.ups.com/track?loc=en_US&requester=ST/`, {
+    //   waitUntil: "networkidle2",
+    // });
+    // await page.waitForSelector("#stApp_trackingNumber");
+    // await page.type("#stApp_trackingNumber", text);
+
+    // await page.click("#stApp_btnTrack");
+    // await page.waitForNavigation({ waitUntil: "networkidle2" });
+    // get tracking number
+    await page.waitForSelector("#stApp_trackingNumber");
+    let [not_found] = await page.$x(
+      '//span[contains(text(),"Please provide a tracking number.")]'
+    );
+    if (!not_found) {
+      await page.waitForSelector(
+        "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(1)"
+      );
+      let status = await page.evaluate(() => {
+        let el = document.querySelector(
+          "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(1)"
+        );
+        return el ? el.innerText : "";
+      });
+      // get estimated delivery
+      await page.waitForSelector(
+        "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(2)"
+      );
+      let estDelivery = await page.evaluate(() => {
+        let el = document.querySelector(
+          "track-expected-delivery > div.ed_summary.ng-star-inserted > div > span:nth-child(2)n"
+        );
+        return el ? el.innerText : "";
+      });
+      let eta_date = null;
+      let delivery_date = null;
+      if (estDelivery && status.trim() == "Delivered") {
+        delivery_date = moment(estDelivery.trim()).format("YYYY-MM-DD");
+      } else {
+        await page.waitForSelector("tr.ups-progress_current_row");
+        status = await page.evaluate(() => {
+          let el = document.querySelector("tr.ups-progress_current_row > td");
+          return el ? el.innerText.trim() : "";
+        });
+        console.log(estDelivery);
+        let month_date = estDelivery
+          .split(",")[1]
+          .split("by")[0]
+          .split("at")[0]
+          .trim();
+        console.log(month_date);
+        eta_date = moment(month_date, "MMMM D").format("YYYY-MM-DD");
+        console.log(eta_date);
+      }
+      // get status delivery
+
+      // get address
+      await page.waitForSelector("#stApp_txtAddress");
+      let address = await page.evaluate(() => {
+        let el = document.querySelector("#stApp_txtAddress");
+        return el ? el.innerText : "";
+      });
+      // get address country
+      await page.waitForSelector("#stApp_txtCountry");
+
+      let country = await page.evaluate(() => {
+        let el = document.querySelector("#stApp_txtCountry");
+        return el ? el.innerText : "";
+      });
+
+      // click view details
+      // await page.waitForNavigation({ waitUntil: "networkidle2" });
+      await page.waitForSelector("#st_App_View_Details");
+      await page.evaluate(() => {
+        let el = document.querySelector("#st_App_View_Details");
+        el.click();
+      });
+      // click tab Shipment Progress
+      await page.waitForSelector("#tab_1");
+      await page.click("#tab_1");
+
+      // get time activity
+      await page.waitForSelector("#stApp_activitiesdateTime0");
+      let activityDateTime = await page.evaluate(() => {
+        let el = document.querySelector("#stApp_activitiesdateTime0");
+        return el ? el.innerText.replace(/(\r\n|\n|\r)/gm, " ") : "";
+      });
+
+      // get milestone and location
+      await page.waitForSelector("#stApp_milestoneActivityLocation0");
+      let milestone = await page.evaluate(() => {
+        let el = document.querySelector("#stApp_milestoneActivityLocation0");
+        return el ? el.innerText : "";
+      });
+
+      // get last updated
+      await page.waitForSelector(
+        "#upsAng2Modal > div > div > div.modal-body.ups-form_wrap > div > div.ups-group"
+      );
+      let lastUpdated = await page.evaluate(() => {
+        let el = document.querySelector(
+          "#upsAng2Modal > div > div > div.modal-body.ups-form_wrap > div > div.ups-group"
+        );
+        return el ? el.innerText.replace("Last Updated:", "") : "";
+      });
+      if (trackingNumber !== "") {
+        milestone = milestone?.split("\n");
+        let milestone_name = milestone[0];
+        let location = milestone[1];
+        let status = get_status(milestone_name);
+        let payload = {
+          tracking_number: trackingNumber,
+          carrier: "UPS",
+          last_updated: lastUpdated,
+          status: status,
+          activity_date: activityDateTime,
+          milestone_name: milestone_name,
+          location: location,
+          est_delivery: estDelivery,
+          address: address + " " + country,
+          src_address: addr,
+        };
+        if (eta_date) {
+          payload = { ...payload, eta_date: eta_date };
+        }
+        if (delivery_date) {
+          payload = { ...payload, delivery_date: delivery_date };
+        }
+        await axios
+          .post("https://cheapr.my.id/tracking/", payload, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+          .catch(function (error) {
+            console.log(error.toJSON());
+          });
+      } else {
+        console.log("tracking Number not found!!!");
+      }
+    } else {
+      await axios
+        .post(
+          "https://cheapr.my.id/tracking/",
+          {
+            tracking_number: text,
+            carrier: "UPS",
+            last_updated: "",
+            status: "N",
+            activity_date: "",
+            milestone_name: "",
+            location: "",
+            est_delivery: "",
+            address: "",
+            src_address: "",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .catch(function (error) {
+          console.log(error.toJSON());
+        });
+    }
   };
   // let tracks = ["1Z7V38144202758397", "1Z7V38144234218553"];
   let not_criteria = [];
