@@ -397,7 +397,13 @@ const alltrackers = async (pk, tracks) => {
       "p.tb-date",
       (elements) => elements[0].textContent
     );
+    let eta_snip = await page.$$eval("span.eta_snip", (elements) =>
+      elements[0] ? elements[0].textContent : ""
+    );
+    console.log("eta_snip: ", eta_snip);
+
     let stts = get_status(status);
+    console.log(1);
     let payload = {
       tracking_number: id,
       carrier: "USPS",
@@ -410,25 +416,35 @@ const alltrackers = async (pk, tracks) => {
       address: "",
       src_address: addr,
     };
+    console.log(2);
     let eta_date = null;
     let delivery_date = null;
     if (status.trim() == "Delivered") {
       delivery_date = moment(tb_date.trim(), "MMMM D, YYYY").format(
         "YYYY-MM-DD"
       );
-    } else {
-      eta_date = moment(tb_date.trim(), "MMMM D, YYYY").format("YYYY-MM-DD");
     }
+    if (eta_snip) {
+      eta_date = moment(eta_snip).format("YYYY-MM-DD");
+    }
+    console.log(3);
     if (status == "Delivered") {
       payload = { ...payload, delivery_date: delivery_date };
     } else if (eta_date) {
       payload = { ...payload, eta_date: eta_date };
     }
-    await axios.post("https://cheapr.my.id/tracking/", payload, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    console.log(4);
+    await axios
+      .post("https://cheapr.my.id/tracking/", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .catch(function (error) {
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      });
   };
   const cpc = async function ({ page, data: data }) {
     let { src, addr } = data;
@@ -572,6 +588,7 @@ const alltrackers = async (pk, tracks) => {
     let data = tracks[i]["data"];
     for (let j = 0; j < data.length; j++) {
       if (data[j].startsWith("1Z")) {
+        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, ups);
       } else if (
         !data[j].startsWith("1Z") &&
@@ -579,6 +596,7 @@ const alltrackers = async (pk, tracks) => {
         data[j].length >= 12 &&
         data[j].length <= 14
       ) {
+        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, fedex);
       } else if (
         !data[j].startsWith("1Z") &&
@@ -591,6 +609,7 @@ const alltrackers = async (pk, tracks) => {
         data[j].startsWith("CA") ||
         data[j].length == 16
       ) {
+        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, cpc);
       } else {
         not_criteria.push(data[j]);

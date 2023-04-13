@@ -476,6 +476,7 @@ const sellerAmazon = async function () {
       console.log(latest_date);
       let added_row = false;
       for (let n = 0; n < data.length; n++) {
+        await sleep(1000);
         let row_data = data[n];
         let dateFormat = new Date(parseInt(row_data[0]) * 1000);
         if (
