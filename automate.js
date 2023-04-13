@@ -21,6 +21,7 @@ const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const vanillaPuppeteer = require("puppeteer");
 const os = require("node:os");
 const readXlsxFile = require("read-excel-file/node");
+const moment = require("moment");
 
 const defaultViewport = {
   height: 1920,
@@ -4147,7 +4148,8 @@ const booktrackings = async function () {
         let rowCount = resSheet.rowCount;
         console.log(rowCount);
         let start = 2;
-        let end = rowCount;
+        let end = 500;
+        console.log(end);
         // let end = 200;
         let delivered = { green: 1 };
         let transit = { red: 1, green: 1 };
@@ -4292,13 +4294,11 @@ const update_trackings = async function () {
           let result_data = result[0];
           console.log(result_data);
           let carrier_cell = resSheet.getCellByA1(`AL${idx}`);
-          carrier_cell.value = carrier_cell.value
-            ? carrier_cell.value
-            : result_data["carrier"];
+          carrier_cell.value = result_data["carrier"];
           let eta_cell = resSheet.getCellByA1(`AN${idx}`);
-          eta_cell.value = eta_cell.value
-            ? eta_cell.value
-            : result_data["eta_date"];
+          eta_cell.value = result_data["eta_date"]
+            ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
+            : "";
           if (result_data["status"] == "D") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
               let cell = resSheet.getCellByA1(`AM${idx}`);
@@ -4338,6 +4338,12 @@ const update_trackings = async function () {
           let result = await response.data.results;
           if (result.length == 1) {
             let result_data = result[0];
+            let carrier_cell = resSheet.getCellByA1(`AL${idx}`);
+            carrier_cell.value = result_data["carrier"];
+            let eta_cell = resSheet.getCellByA1(`AN${idx}`);
+            eta_cell.value = result_data["eta_date"]
+              ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
+              : "";
             allstatus.push(result_data["status"]);
           }
         }
@@ -4394,14 +4400,15 @@ const update_booktrackings = async function () {
     let rowCount = resSheet.rowCount;
     console.log(rowCount);
     let start = 1;
-    let end = rowCount;
+    let end = 500;
+    console.log(end);
     // let end = 200;
     let delivered = { green: 1 };
     let transit = { red: 1, green: 1 };
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
     let not_started = { red: 1, green: 1, blue: 1 };
-    await resSheet.loadCells(`T${start}:T${end}`);
+    await resSheet.loadCells(`T${start}:V${end}`);
     let tracking_numbers = [];
     for (let i = start; i < end; i++) {
       let cell = resSheet.getCellByA1(`T${i}`);
@@ -4456,6 +4463,12 @@ const update_booktrackings = async function () {
         let result = await response.data.results;
         if (result.length == 1) {
           let result_data = result[0];
+          let carrier_cell = resSheet.getCellByA1(`U${idx}`);
+          carrier_cell.value = result_data["carrier"];
+          let eta_cell = resSheet.getCellByA1(`V${idx}`);
+          eta_cell.value = result_data["eta_date"]
+            ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
+            : "";
           if (result_data["status"] == "D") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
               let cell = resSheet.getCellByA1(`T${idx}`);
@@ -4495,6 +4508,12 @@ const update_booktrackings = async function () {
           let result = await response.data.results;
           if (result.length == 1) {
             let result_data = result[0];
+            let carrier_cell = resSheet.getCellByA1(`U${idx}`);
+            carrier_cell.value = result_data["carrier"];
+            let eta_cell = resSheet.getCellByA1(`V${idx}`);
+            eta_cell.value = result_data["eta_date"]
+              ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
+              : "";
             allstatus.push(result_data["status"]);
           }
         }
