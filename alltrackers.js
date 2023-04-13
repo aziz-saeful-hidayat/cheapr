@@ -341,8 +341,11 @@ const alltrackers = async (pk, tracks) => {
           "Content-Type": "application/json",
         },
       })
+      .then(function (response) {
+        console.log(response.data);
+      })
       .catch(function (error) {
-        console.log(error.toJSON());
+        console.log(error.response.data);
       });
   };
   const usps = async function ({ page, data: data }) {
@@ -397,13 +400,32 @@ const alltrackers = async (pk, tracks) => {
       "p.tb-date",
       (elements) => elements[0].textContent
     );
-    let eta_snip = await page.$$eval("span.eta_snip", (elements) =>
-      elements[0] ? elements[0].textContent : ""
+    let eta_day = await page.evaluate(() => {
+      let el = document.querySelector("span.eta_snip:nth-child(1) .day");
+      return el ? el.innerText : "";
+    });
+    let eta_snip = await page.$$eval(
+      "span.eta_snip:nth-child(1)",
+      (elements, eta_day) =>
+        elements[0]
+          ? elements[0].innerText
+              .replace(eta_day, "")
+              .replace("Expected Delivery Date", "")
+              .replace("Expected", "")
+              .replace(
+                "delivery on the date provided is the latest information on when",
+                ""
+              )
+              .replace(
+                "the Postal Service™ expects to deliver your package.",
+                ""
+              )
+              .trim()
+          : "",
+      [eta_day]
     );
-    console.log("eta_snip: ", eta_snip);
 
     let stts = get_status(status);
-    console.log(1);
     let payload = {
       tracking_number: id,
       carrier: "USPS",
@@ -416,7 +438,6 @@ const alltrackers = async (pk, tracks) => {
       address: "",
       src_address: addr,
     };
-    console.log(2);
     let eta_date = null;
     let delivery_date = null;
     if (status.trim() == "Delivered") {
@@ -425,25 +446,30 @@ const alltrackers = async (pk, tracks) => {
       );
     }
     if (eta_snip) {
-      eta_date = moment(eta_snip).format("YYYY-MM-DD");
+      try {
+        eta_date = moment(eta_snip.trim(), "D MMMM YYYY").format("YYYY-MM-DD");
+      } catch {
+        (err) => {
+          console.log("eta_snip error: ", eta_snip);
+        };
+      }
     }
-    console.log(3);
     if (status == "Delivered") {
       payload = { ...payload, delivery_date: delivery_date };
     } else if (eta_date) {
       payload = { ...payload, eta_date: eta_date };
     }
-    console.log(4);
     await axios
       .post("https://cheapr.my.id/tracking/", payload, {
         headers: {
           "Content-Type": "application/json",
         },
       })
+      .then(function (response) {
+        console.log(response.data);
+      })
       .catch(function (error) {
         console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
       });
   };
   const cpc = async function ({ page, data: data }) {
@@ -577,8 +603,11 @@ const alltrackers = async (pk, tracks) => {
             },
           }
         )
+        .then(function (response) {
+          console.log(response.data);
+        })
         .catch(function (error) {
-          console.log(error.toJSON());
+          console.log(error.response.data);
         });
     }
   };
