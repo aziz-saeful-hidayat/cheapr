@@ -357,120 +357,152 @@ const alltrackers = async (pk, tracks) => {
       `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`
     );
     await page.goto(
-      `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`,
-      {
-        waitUntil: "networkidle2",
-      }
+      `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`
     );
-    let status = "Pre-Shipment";
-    // get banner
     await page.waitForSelector("h3.banner-header");
-    let banner = await page.evaluate(() => {
-      let el = document.querySelector("h3.banner-header");
-      return el ? el.innerText : "";
-    });
-    let substrings = ["Label Created", "USPS Currently Awaiting Package"];
-    if (!substrings.some((v) => banner.includes(v))) {
-      // get estimated delivery
-      await page.waitForSelector("p.tb-status");
-      status = await page.evaluate(() => {
-        let el = document.querySelector("p.tb-status");
+    let [not_found] = await page.$x(
+      '//h3[contains(text(),"Please provide a tracking number.")]'
+    );
+    if (!not_found) {
+      let status = "Pre-Shipment";
+      // get banner
+      await page.waitForSelector("h3.banner-header");
+      let banner = await page.evaluate(() => {
+        let el = document.querySelector("h3.banner-header");
         return el ? el.innerText : "";
       });
-    }
-    // get id
-    await page.waitForSelector("span.tracking-number");
-    let id = await page.evaluate(() => {
-      let el = document.querySelector("span.tracking-number");
-      return el ? el.innerText : "";
-    });
-
-    // get destination
-    // await page.waitForSelector("div.shipment-status-progress-step");
-    // let destination = await page.$$eval(
-    //   "div.shipment-status-progress-step",
-    //   (elements) =>
-    //     elements[elements.length - 1].querySelector("div > div:nth-child(4)")
-    //       .textContent
-    // );
-
-    // get date
-    await page.waitForSelector("p.tb-date");
-    let tb_date = await page.$$eval(
-      "p.tb-date",
-      (elements) => elements[0].textContent
-    );
-    let eta_day = await page.evaluate(() => {
-      let el = document.querySelector("span.eta_snip:nth-child(1) .day");
-      return el ? el.innerText : "";
-    });
-    let eta_snip = await page.$$eval(
-      "span.eta_snip:nth-child(1)",
-      (elements, eta_day) =>
-        elements[0]
-          ? elements[0].innerText
-              .replace(eta_day, "")
-              .replace("Expected Delivery Date", "")
-              .replace("Expected", "")
-              .replace(
-                "delivery on the date provided is the latest information on when",
-                ""
-              )
-              .replace(
-                "the Postal Service™ expects to deliver your package.",
-                ""
-              )
-              .trim()
-          : "",
-      [eta_day]
-    );
-
-    let stts = get_status(status);
-    let payload = {
-      tracking_number: id,
-      carrier: "USPS",
-      last_updated: "",
-      activity_date: "",
-      milestone_name: status,
-      status: stts,
-      location: "",
-      est_delivery: "",
-      address: "",
-      src_address: addr,
-    };
-    let eta_date = null;
-    let delivery_date = null;
-    if (status.trim() == "Delivered") {
-      delivery_date = moment(tb_date.trim(), "MMMM D, YYYY").format(
-        "YYYY-MM-DD"
-      );
-    }
-    if (eta_snip) {
-      try {
-        eta_date = moment(eta_snip.trim(), "D MMMM YYYY").format("YYYY-MM-DD");
-      } catch {
-        (err) => {
-          console.log("eta_snip error: ", eta_snip);
-        };
+      let substrings = ["Label Created", "USPS Currently Awaiting Package"];
+      if (!substrings.some((v) => banner.includes(v))) {
+        // get estimated delivery
+        await page.waitForSelector("p.tb-status");
+        status = await page.evaluate(() => {
+          let el = document.querySelector("p.tb-status");
+          return el ? el.innerText : "";
+        });
       }
-    }
-    if (status == "Delivered") {
-      payload = { ...payload, delivery_date: delivery_date };
-    } else if (eta_date) {
-      payload = { ...payload, eta_date: eta_date };
-    }
-    await axios
-      .post("https://cheapr.my.id/tracking/", payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then(function (response) {
-        console.log(response.data);
-      })
-      .catch(function (error) {
-        console.log(error.response.data);
+      // get id
+      await page.waitForSelector("span.tracking-number");
+      let id = await page.evaluate(() => {
+        let el = document.querySelector("span.tracking-number");
+        return el ? el.innerText : "";
       });
+
+      // get destination
+      // await page.waitForSelector("div.shipment-status-progress-step");
+      // let destination = await page.$$eval(
+      //   "div.shipment-status-progress-step",
+      //   (elements) =>
+      //     elements[elements.length - 1].querySelector("div > div:nth-child(4)")
+      //       .textContent
+      // );
+
+      // get date
+      await page.waitForSelector("p.tb-date");
+      let tb_date = await page.$$eval(
+        "p.tb-date",
+        (elements) => elements[0].textContent
+      );
+      let eta_day = await page.evaluate(() => {
+        let el = document.querySelector("span.eta_snip:nth-child(1) .day");
+        return el ? el.innerText : "";
+      });
+      let eta_snip = await page.$$eval(
+        "span.eta_snip:nth-child(1)",
+        (elements, eta_day) =>
+          elements[0]
+            ? elements[0].innerText
+                .replace(eta_day, "")
+                .replace("Expected Delivery Date", "")
+                .replace("Expected", "")
+                .replace(
+                  "delivery on the date provided is the latest information on when",
+                  ""
+                )
+                .replace(
+                  "the Postal Service™ expects to deliver your package.",
+                  ""
+                )
+                .trim()
+            : "",
+        [eta_day]
+      );
+
+      let stts = get_status(status);
+
+      let eta_date = null;
+      let delivery_date = null;
+      if (status.trim() == "Delivered") {
+        delivery_date = moment(tb_date.trim(), "MMMM D, YYYY").format(
+          "YYYY-MM-DD"
+        );
+      }
+      if (eta_snip) {
+        try {
+          eta_date = moment(eta_snip.trim(), "D MMMM YYYY").format(
+            "YYYY-MM-DD"
+          );
+        } catch {
+          (err) => {
+            console.log("eta_snip error: ", eta_snip);
+          };
+        }
+      } else {
+        eta_date = null;
+      }
+      let payload = {
+        tracking_number: id,
+        carrier: "USPS",
+        last_updated: "",
+        activity_date: "",
+        milestone_name: status,
+        status: stts,
+        location: "",
+        est_delivery: "",
+        address: "",
+        src_address: addr,
+        eta_date: eta_date,
+      };
+      if (status == "Delivered") {
+        payload = { ...payload, delivery_date: delivery_date };
+      }
+      await axios
+        .post("https://cheapr.my.id/tracking/", payload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.log(error.response.data);
+        });
+    } else {
+      let payload = {
+        tracking_number: text,
+        carrier: "USPS",
+        last_updated: "",
+        activity_date: "",
+        milestone_name: "Label Created, not yet in system",
+        status: "N",
+        location: "",
+        est_delivery: "",
+        address: "",
+        src_address: addr,
+      };
+      await axios
+        .post("https://cheapr.my.id/tracking/", payload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.log(error.response.data);
+        });
+    }
   };
   const cpc = async function ({ page, data: data }) {
     let { src, addr } = data;
