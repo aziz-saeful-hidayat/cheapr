@@ -626,7 +626,6 @@ const alltrackers = async (pk, tracks) => {
     let data = tracks[i]["data"];
     for (let j = 0; j < data.length; j++) {
       if (data[j].startsWith("1Z")) {
-        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, ups);
       } else if (
         !data[j].startsWith("1Z") &&
@@ -640,14 +639,12 @@ const alltrackers = async (pk, tracks) => {
         data[j].length >= 16 &&
         !data[j].startsWith("LA")
       ) {
-        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, usps);
       } else if (
         data[j].startsWith("LA") ||
         data[j].startsWith("CA") ||
         data[j].length == 16
       ) {
-        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, cpc);
       } else {
         not_criteria.push(data[j]);
