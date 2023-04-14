@@ -9,15 +9,7 @@ const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
   headless: false,
-  args: [
-    "--disable-gpu",
-    "--disable-dev-shm-usage",
-    "--disable-setuid-sandbox",
-    "--no-first-run",
-    "--no-sandbox",
-    "--no-zygote",
-    "--proxy-server=dc.smartproxy.com:10000",
-  ],
+  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
   // userDataDir: "./user_data",
 };
@@ -51,7 +43,7 @@ const alltrackers = async (pk, tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 2,
+    maxConcurrency: 4,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
