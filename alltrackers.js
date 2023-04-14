@@ -64,14 +64,10 @@ const alltrackers = async (pk, tracks) => {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
     let url = `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`;
-    console.log(url);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
-      `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`,
-      {
-        waitUntil: "networkidle2",
-      }
+      `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`
     );
     // await page.goto(`https://www.ups.com/track?loc=en_US&requester=ST/`, {
     //   waitUntil: "networkidle2",
@@ -82,6 +78,7 @@ const alltrackers = async (pk, tracks) => {
     // await page.click("#stApp_btnTrack");
     // await page.waitForNavigation({ waitUntil: "networkidle2" });
     // get tracking number
+    await page.waitForSelector("#stApp_trackingNumber");
     let [not_found] = await page.$x(
       '//span[contains(text(),"Please provide a tracking number.")]'
     );
@@ -100,7 +97,6 @@ const alltrackers = async (pk, tracks) => {
       let eta_date = null;
       let delivery_date = null;
       if (estDelivery && estDelivery.includes("Pick up")) {
-        await page.waitForSelector("tr.ups-progress_current_row");
         status = await page.evaluate(() => {
           let el = document.querySelector("tr.ups-progress_current_row > td");
           return el ? el.innerText.trim() : "";
@@ -112,47 +108,35 @@ const alltrackers = async (pk, tracks) => {
           "The delivery date will be provided as soon as possible"
         )
       ) {
-        await page.waitForSelector("tr.ups-progress_current_row");
         status = await page.evaluate(() => {
           let el = document.querySelector("tr.ups-progress_current_row > td");
           return el ? el.innerText.trim() : "";
         });
-        console.log(estDelivery);
         let month_date = estDelivery
           .split(",")[1]
           .split("by")[0]
           .split("at")[0]
           .trim();
-        console.log(month_date);
         eta_date = moment(month_date, "MMMM D").format("YYYY-MM-DD");
-        console.log(eta_date);
       } else if (estDelivery && estDelivery.includes("Delivered")) {
-        await page.waitForSelector("tr.ups-progress_current_row");
         status = await page.evaluate(() => {
           let el = document.querySelector("tr.ups-progress_current_row > td");
           return el ? el.innerText.trim() : "";
         });
-        console.log(estDelivery);
         let month_date = estDelivery
           .split(",")[1]
           .split("by")[0]
           .split("at")[0]
           .trim();
-        console.log(month_date);
         delivery_date = moment(month_date, "MMMM D").format("YYYY-MM-DD");
-        console.log(delivery_date);
       }
       // get status delivery
-
       // get address
-      await page.waitForSelector("#stApp_txtAddress");
       let address = await page.evaluate(() => {
         let el = document.querySelector("#stApp_txtAddress");
         return el ? el.innerText : "";
       });
       // get address country
-      await page.waitForSelector("#stApp_txtCountry");
-
       let country = await page.evaluate(() => {
         let el = document.querySelector("#stApp_txtCountry");
         return el ? el.innerText : "";
@@ -160,7 +144,6 @@ const alltrackers = async (pk, tracks) => {
 
       // click view details
       // await page.waitForNavigation({ waitUntil: "networkidle2" });
-      await page.waitForSelector("#st_App_View_Details");
       await page.evaluate(() => {
         let el = document.querySelector("#st_App_View_Details");
         el.click();
@@ -222,8 +205,11 @@ const alltrackers = async (pk, tracks) => {
               "Content-Type": "application/json",
             },
           })
+          .then(function (response) {
+            console.log(response.data);
+          })
           .catch(function (error) {
-            console.log(error.toJSON());
+            console.log(error.response.data);
           });
       } else {
         console.log("tracking Number not found!!!");
@@ -250,8 +236,11 @@ const alltrackers = async (pk, tracks) => {
             },
           }
         )
+        .then(function (response) {
+          console.log(response.data);
+        })
         .catch(function (error) {
-          console.log(error.toJSON());
+          console.log(error.response.data);
         });
     }
   };
@@ -260,8 +249,6 @@ const alltrackers = async (pk, tracks) => {
     let text = typeof src == "string" ? src.trim() : src.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    console.log(`https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`);
-
     await page.goto(
       `https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`,
       {
@@ -300,7 +287,6 @@ const alltrackers = async (pk, tracks) => {
 
     if (estDelivery) {
       let month_date = estDelivery.split("by")[0].split("at")[0].trim();
-      console.log(month_date);
       if (status.trim() == "Delivered") {
         delivery_date = moment(month_date, "M/D/YYYY").format("YYYY-MM-DD");
       } else {
@@ -345,9 +331,6 @@ const alltrackers = async (pk, tracks) => {
     let text = typeof src == "string" ? src.trim() : src.toString();
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    console.log(
-      `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`
-    );
     await page.goto(
       `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`
     );
@@ -500,7 +483,6 @@ const alltrackers = async (pk, tracks) => {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
     let url = `https://www.canadapost-postescanada.ca/track-reperage/en#/details/${text}`;
-    console.log(url);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
@@ -599,8 +581,11 @@ const alltrackers = async (pk, tracks) => {
               "Content-Type": "application/json",
             },
           })
+          .then(function (response) {
+            console.log(response.data);
+          })
           .catch(function (error) {
-            console.log(error.toJSON());
+            console.log(error.response.data);
           });
       } else {
         console.log("tracking Number not found!!!");
@@ -641,6 +626,7 @@ const alltrackers = async (pk, tracks) => {
     let data = tracks[i]["data"];
     for (let j = 0; j < data.length; j++) {
       if (data[j].startsWith("1Z")) {
+        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, ups);
       } else if (
         !data[j].startsWith("1Z") &&
@@ -654,12 +640,14 @@ const alltrackers = async (pk, tracks) => {
         data[j].length >= 16 &&
         !data[j].startsWith("LA")
       ) {
+        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, usps);
       } else if (
         data[j].startsWith("LA") ||
         data[j].startsWith("CA") ||
         data[j].length == 16
       ) {
+        continue;
         cluster.queue({ src: data[j], addr: tracks[i]["addr"] }, cpc);
       } else {
         not_criteria.push(data[j]);

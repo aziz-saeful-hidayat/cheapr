@@ -494,6 +494,7 @@ const sellerAmazon = async function () {
             true,
             10000
           );
+          await resSheet.loadCells("A1:AB1000");
           let date_sh =
             dateFormat.getMonth() +
             1 +
@@ -521,17 +522,9 @@ const sellerAmazon = async function () {
           resSheet.getCell(16, 13).value = parseTexint(row_data[33]);
           resSheet.getCell(16, 14).value = parseTexint(row_data[34]) / 100;
           resSheet.getCell(16, 17).value = row_data[35] - row_data[36];
-
-          if (n % 10 == 0) {
-            await retry(
-              () => Promise.all([resSheet.saveUpdatedCells()]),
-              5,
-              true,
-              10000
-            );
-          }
         }
       }
+
       if (added_row) {
         resSheet.getCell(16, 11).value = parseTexint(
           parseFloat(result["odr"]) / 100
@@ -553,6 +546,7 @@ const sellerAmazon = async function () {
         resSheet.getCell(16, 26).formula = "=A17";
         resSheet.getCell(16, 27).formula =
           "=VLOOKUP(AA17,A$16:T$57,AB$14,FALSE)";
+        added_row = false;
       }
       await retry(
         () => Promise.all([resSheet.saveUpdatedCells()]),
