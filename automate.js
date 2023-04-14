@@ -494,7 +494,6 @@ const sellerAmazon = async function () {
             true,
             10000
           );
-          await resSheet.loadCells("A1:AB1000");
           let date_sh =
             dateFormat.getMonth() +
             1 +
@@ -525,29 +524,29 @@ const sellerAmazon = async function () {
         }
       }
 
-      if (added_row) {
-        resSheet.getCell(16, 11).value = parseTexint(
-          parseFloat(result["odr"]) / 100
-        );
-        resSheet.getCell(16, 16).value = parseTexint(
-          parseFloat(result["vtr"]) / 100
-        );
-        resSheet.getCell(16, 17).value = result["pos_feedback"];
+      // if (added_row) {
+      //   resSheet.getCell(16, 11).value = parseTexint(
+      //     parseFloat(result["odr"]) / 100
+      //   );
+      //   resSheet.getCell(16, 16).value = parseTexint(
+      //     parseFloat(result["vtr"]) / 100
+      //   );
+      //   resSheet.getCell(16, 17).value = result["pos_feedback"];
 
-        resSheet.getCell(16, 18).value = parseTexint(
-          parseFloat(result["lsr"]) / 100
-        );
-        resSheet.getCell(16, 19).value = parseTexint(
-          parseFloat(result["otdr"]) / 100
-        );
-        resSheet.getCell(16, 20).value = parseTexint(
-          parseFloat(result["cr"]) / 100
-        );
-        resSheet.getCell(16, 26).formula = "=A17";
-        resSheet.getCell(16, 27).formula =
-          "=VLOOKUP(AA17,A$16:T$57,AB$14,FALSE)";
-        added_row = false;
-      }
+      //   resSheet.getCell(16, 18).value = parseTexint(
+      //     parseFloat(result["lsr"]) / 100
+      //   );
+      //   resSheet.getCell(16, 19).value = parseTexint(
+      //     parseFloat(result["otdr"]) / 100
+      //   );
+      //   resSheet.getCell(16, 20).value = parseTexint(
+      //     parseFloat(result["cr"]) / 100
+      //   );
+      //   resSheet.getCell(16, 26).formula = "=A17";
+      //   resSheet.getCell(16, 27).formula =
+      //     "=VLOOKUP(AA17,A$16:T$57,AB$14,FALSE)";
+      //   added_row = false;
+      // }
       await retry(
         () => Promise.all([resSheet.saveUpdatedCells()]),
         5,
@@ -564,8 +563,8 @@ const sellerAmazon = async function () {
     let result_data_3 = await grabData(3, 1);
     await writeSheet(result_data_3, "577275692");
 
-    let result_data_4 = await grabData(4, 2);
-    await writeSheet(result_data_4, "1152900177");
+    let result_data_4 = await grabData(5, 3);
+    await writeSheet(result_data_4, "753769627");
 
     let dateFormat = new Date();
 
