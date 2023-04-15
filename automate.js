@@ -4039,7 +4039,7 @@ const trackings = async function () {
   let result = await response.data.results;
   if (result.length > 0) {
     let data = result[0];
-    if (data["status"] != "PAUSED") {
+    if (data["status"] != "RUNNING") {
       await axios.patch(`https://cheapr.my.id/scraping_status/${data["pk"]}/`, {
         status: "RUNNING",
       });
