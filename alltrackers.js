@@ -332,7 +332,10 @@ const alltrackers = async (pk, tracks) => {
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
-      `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`
+      `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`,
+      {
+        waitUntil: "domcontentloaded",
+      }
     );
     await page.waitForSelector("h3.banner-header");
     let [not_found] = await page.$x(
@@ -373,9 +376,8 @@ const alltrackers = async (pk, tracks) => {
 
       // get date
       await page.waitForSelector("p.tb-date");
-      let tb_date = await page.$$eval(
-        "p.tb-date",
-        (elements) => elements[0].textContent
+      let tb_date = await page.$$eval("p.tb-date", (elements) =>
+        elements[0] ? elements[0].innerText : ""
       );
       let eta_day = await page.evaluate(() => {
         let el = document.querySelector("span.eta_snip:nth-child(1) .day");
