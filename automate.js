@@ -607,6 +607,317 @@ const sellerAmazon = async function () {
     await browser.close();
   }
 };
+const sellerAmazonEmpty = async function () {
+  const doc = new GoogleSpreadsheet(
+    "1DrG1p3is3QqScFgBboIRFrgwb4Gio9T6MbX1D75R9fM"
+  );
+  // const updateFtcresult = await updateFtc();
+  // console.log(updateFtcresult);
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo(); // loads document properties and worksheets
+  console.log(doc.title);
+  const settingDoc = new GoogleSpreadsheet(
+    "1hT5ZP9pDHPrhBwekGGgaQLmDITjPn_8_wvvJ--wPP0g"
+  );
+  await settingDoc.useServiceAccountAuth(creds);
+  await settingDoc.loadInfo(); // loads document properties and worksheets
+  console.log(settingDoc.title);
+
+  let settingSheet = settingDoc.sheetsById["0"];
+  await settingSheet.loadCells("A1:H40");
+  settingSheet.getCell(4, 1).value = "";
+  settingSheet.getCell(4, 2).value = "RUNNING";
+  settingSheet.getCell(4, 4).value = "";
+
+  await retry(
+    () => Promise.all([settingSheet.saveUpdatedCells()]),
+    5,
+    true,
+    10000
+  );
+  puppeteer.use(StealthPlugin());
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox"],
+    executablePath: executablePath(),
+    userDataDir: "./user_data",
+  });
+  const page = await browser.newPage();
+  const checkOtp = async () => {
+    await settingSheet.loadCells("A1:G20");
+    let otp = settingSheet.getCell(4, 1).value;
+    let length = 0;
+    while (!otp && length != 6) {
+      console.log("Waiting OTP", otp);
+      await settingSheet.loadCells("A1:G20");
+      otp = settingSheet.getCell(4, 1).value;
+      if (otp) {
+        length = otp.toString().length;
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    let otpText = otp.toString();
+    console.log("OTP found:", otp);
+    settingSheet.getCell(4, 1).value = "OTP Found";
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    settingSheet.getCell(4, 1).value = "";
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    return otpText;
+  };
+
+  const check2fa = async () => {
+    let url = await page.url();
+    if (url.includes("/ap/mfa")) {
+      settingSheet.getCell(4, 2).value = "Need OTP";
+      await retry(
+        () => Promise.all([settingSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
+      await new Promise((r) => setTimeout(r, 2000));
+      let otp = await checkOtp();
+      await page.type("#auth-mfa-otpcode", otp);
+      await page.waitForTimeout(2000);
+      await page.click("#auth-mfa-remember-device");
+      await page.waitForTimeout(2000);
+      await page.click("#auth-signin-button");
+      console.log("Clicking login");
+      await page.waitForNavigation({
+        waitUntil: "networkidle2",
+      });
+      url = await page.url();
+      if (url.includes("/ap/mfa")) {
+        settingSheet.getCell(4, 2).value = "Wrong OTP, Stopped";
+        await retry(
+          () => Promise.all([settingSheet.saveUpdatedCells()]),
+          5,
+          true,
+          10000
+        );
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+  };
+  try {
+    await page.setJavaScriptEnabled(true);
+    await page.setDefaultNavigationTimeout(0);
+    await page.goto("https://sellercentral.amazon.com/", {
+      waitUntil: "networkidle0",
+    });
+    let url = await page.url();
+    console.log(url);
+    if (!url.includes("/home")) {
+      await page.click('a[href*="https://sellercentral.amazon.com/signin"]');
+      await page.waitForTimeout(10000);
+      console.log("Trying login");
+      let username = settingSheet.getCell(4, 6).value;
+      let password = settingSheet.getCell(4, 7).value;
+      await page.type("#ap_email", username);
+      await page.type("#ap_password", password);
+      await page.click("input[name='rememberMe']");
+
+      await page.waitForTimeout(5000);
+      console.log("Typing email & username");
+
+      await page.click("#signInSubmit");
+      console.log("Clicking login");
+
+      await page.waitForNavigation({
+        waitUntil: "networkidle0",
+      });
+      await check2fa();
+      let url = await page.url();
+      console.log(url);
+
+      if (url.includes("/authorization/select-account")) {
+        await page.waitForTimeout(5000);
+
+        await page.waitForSelector(
+          "#picker-container > div > div.picker-body > div > div:nth-child(1) > div > div:nth-child(4) > button > div > div.picker-name"
+        );
+        await page.click(
+          "#picker-container > div > div.picker-body > div > div:nth-child(1) > div > div:nth-child(1) > button > div > div.picker-name"
+        );
+        await page.waitForTimeout(5000);
+        await page.click(
+          "#picker-container > div > div.picker-body > div > div:nth-child(3) > div > div:nth-child(3) > button > div > div"
+        );
+        await page.waitForTimeout(5000);
+        await page.click(
+          "#picker-container > div > div.picker-footer > div > button"
+        );
+      }
+    }
+
+    const grabData = async (bpos1, bpos2) => {
+      let result = {};
+      await page.goto("https://sellercentral.amazon.com/global-picker", {
+        waitUntil: "networkidle0",
+      });
+      // await page.waitForSelector(
+      //   "#picker-container > div > div.picker-body > div > div:nth-child(1) > div > div:nth-child(4) > button > div > div.picker-name"
+      // );
+      await page.click(
+        `#sc-content-container > div > div.picker-body > div > div > div > div:nth-child(${bpos1})`
+      );
+      await page.waitForTimeout(10000);
+      await page.click(
+        `#sc-content-container > div > div.picker-body > div > div:nth-child(3) > div > div:nth-child(${bpos2}) > button > div > div`
+      );
+      await page.waitForTimeout(10000);
+      await page.click("button.picker-switch-accounts-button");
+      await page.waitForTimeout(10000);
+
+      await page.waitForFunction("window.location.pathname == '/home'");
+
+      await page.goto(
+        "https://sellercentral.amazon.com/business-reports/ref=xx_sitemetric_dnav_xx#/report?id=102%3ADetailSalesTrafficByTime&chartCols=17&columns=0%2F1%2F2%2F3%2F4%2F5%2F6%2F17%2F18%2F23%2F24%2F25%2F26%2F29%2F30%2F31%2F32&fromDate=2022-01-17&toDate=2022-10-18"
+      );
+      const finalResponse = await page.waitForResponse(
+        (response) =>
+          response.url() ===
+            "https://sellercentral.amazon.com/business-reports/api" &&
+          response
+            .request()
+            .postData()
+            .startsWith('{"operationName":"reportDataQuery"'),
+        20
+      );
+      let responseJson = await finalResponse.json();
+      let report_header = responseJson["data"]["getReportData"]["columns"];
+      let business_report = responseJson["data"]["getReportData"]["rows"];
+      business_report = business_report.reverse();
+      console.log(business_report);
+      result["data"] = { header: report_header, data: business_report };
+      return result;
+    };
+    let parseTexint = (text) => {
+      if (text && typeof text === "string") {
+        if (text.includes(".")) {
+          if (text.startsWith(".")) {
+            return parseFloat(`0${text}`);
+          } else {
+            return parseFloat(text);
+          }
+        } else {
+          return parseInt(text);
+        }
+      } else {
+        return text;
+      }
+    };
+    let writeSheet = async (result, id) => {
+      let resSheet = doc.sheetsById[id];
+      await resSheet.loadCells("A1:AB2000");
+
+      let data = result["data"]["data"];
+      let latest_date = new Date(Date.parse(resSheet.getCell(500, 0).value));
+      console.log(latest_date);
+      let added_row = false;
+      for (let n = 0; n < data.length; n++) {
+        let row_data = data[n];
+        let dateFormat = new Date(parseInt(row_data[0]) * 1000);
+        let date_sh =
+          dateFormat.getMonth() +
+          1 +
+          "/" +
+          dateFormat.getDate() +
+          "/" +
+          dateFormat.getFullYear();
+        console.log(
+          "new data: ",
+          date_sh,
+          dateFormat.getTime(),
+          latest_date.getTime()
+        );
+        resSheet.getCell(n + 500, 0).value = date_sh.toString();
+        resSheet.getCell(n + 500, 1).value = parseTexint(row_data[1]);
+        resSheet.getCell(n + 500, 2).value = parseTexint(row_data[2]);
+        resSheet.getCell(n + 500, 3).value = parseTexint(row_data[3]);
+        resSheet.getCell(n + 500, 4).value = parseTexint(row_data[4]);
+        resSheet.getCell(n + 500, 5).value = parseTexint(row_data[23]);
+        resSheet.getCell(n + 500, 6).value = parseTexint(row_data[24]);
+        resSheet.getCell(n + 500, 7).value = parseTexint(row_data[25]) / 100;
+        resSheet.getCell(n + 500, 8).value = parseTexint(row_data[26]) / 100;
+        resSheet.getCell(n + 500, 9).value = parseTexint(row_data[29]) / 100;
+        resSheet.getCell(n + 500, 10).value = parseTexint(row_data[30]) / 100;
+        resSheet.getCell(n + 500, 13).value = parseTexint(row_data[33]);
+        resSheet.getCell(n + 500, 14).value = parseTexint(row_data[34]) / 100;
+        resSheet.getCell(n + 500, 17).value = row_data[35] - row_data[36];
+      }
+      await retry(
+        () => Promise.all([resSheet.saveUpdatedCells()]),
+        5,
+        true,
+        10000
+      );
+    };
+    let result_data = await grabData(1, 3);
+    await writeSheet(result_data, "1377907402");
+
+    let result_data_2 = await grabData(4, 2);
+    await writeSheet(result_data_2, "1152900177");
+
+    let result_data_3 = await grabData(3, 1);
+    await writeSheet(result_data_3, "577275692");
+
+    let result_data_4 = await grabData(5, 3);
+    await writeSheet(result_data_4, "753769627");
+
+    let dateFormat = new Date();
+
+    settingSheet.getCell(4, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+    settingSheet.getCell(4, 2).value = "COMPLETED";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
+  } catch (e) {
+    console.log(e);
+    console.log("Amazon Aziz Error");
+    let dateFormat = new Date();
+
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    settingSheet.getCell(4, 3).value = dateFormat.toLocaleString("en-US", {
+      timeZone: "America/Denver",
+    });
+
+    settingSheet.getCell(4, 2).value = "ERROR";
+
+    await retry(
+      () => Promise.all([settingSheet.saveUpdatedCells()]),
+      5,
+      true,
+      10000
+    );
+    await browser.close();
+  }
+};
 const ppcAmazon = async function () {
   const doc = new GoogleSpreadsheet(
     "1DrG1p3is3QqScFgBboIRFrgwb4Gio9T6MbX1D75R9fM"
@@ -4061,15 +4372,15 @@ const trackings = async function () {
         let issue = { red: 1, blue: 1 };
         let refunded = { red: 1 };
 
-        await resSheet.loadCells(`AM${start}:AM${end}`);
-        await resSheet.loadCells(`U${start}:U${end}`);
-        await resSheet.loadCells(`I${start}:I${end}`);
+        await resSheet.loadCells(`AN${start}:AN${end}`);
+        await resSheet.loadCells(`V${start}:V${end}`);
+        await resSheet.loadCells(`J${start}:J${end}`);
 
         let tracking_numbers = [];
         for (let i = start; i < end; i++) {
-          let cell = resSheet.getCellByA1(`AM${i}`);
-          let addr = resSheet.getCellByA1(`U${i}`).value;
-          let acell = resSheet.getCellByA1(`I${i}`).value;
+          let cell = resSheet.getCellByA1(`AN${i}`);
+          let addr = resSheet.getCellByA1(`V${i}`).value;
+          let acell = resSheet.getCellByA1(`J${i}`).value;
 
           if (typeof acell == "string" && acell.includes("Delivered")) {
             break;
@@ -4877,6 +5188,7 @@ const ebay = async function () {
 };
 module.exports = {
   sellerAmazon,
+  sellerAmazonEmpty,
   sellerAmazonCH,
   walmart,
   bhphotovideo,

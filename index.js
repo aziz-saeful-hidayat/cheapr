@@ -6,6 +6,7 @@ const cors = require("cors");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const {
   sellerAmazon,
+  sellerAmazonEmpty,
   walmart,
   commision,
   allnew,
@@ -51,6 +52,11 @@ app.use("/static", express.static(path.join(__dirname, "public")));
 
 app.get("/amazon/", function (req, res) {
   sellerAmazon();
+  res.send({ result: "Amazon Automation started" });
+});
+
+app.get("/amazonempty/", function (req, res) {
+  sellerAmazonEmpty();
   res.send({ result: "Amazon Automation started" });
 });
 
