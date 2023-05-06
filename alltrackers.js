@@ -96,6 +96,7 @@ const alltrackers = async (pk, tracks) => {
       let status = "Delivered";
       let eta_date = null;
       let delivery_date = null;
+      console.log(estDelivery);
       if (estDelivery && estDelivery.includes("Pick up")) {
         status = await page.evaluate(() => {
           let el = document.querySelector("tr.ups-progress_current_row > td");
@@ -137,11 +138,12 @@ const alltrackers = async (pk, tracks) => {
         return el ? el.innerText : "";
       });
       // get address country
+      console.log(address);
       let country = await page.evaluate(() => {
         let el = document.querySelector("#stApp_txtCountry");
         return el ? el.innerText : "";
       });
-
+      console.log("#tab_1 clicked");
       // click view details
       // await page.waitForNavigation({ waitUntil: "networkidle2" });
       await page.evaluate(() => {
@@ -151,7 +153,7 @@ const alltrackers = async (pk, tracks) => {
       // click tab Shipment Progress
       await page.waitForSelector("#tab_1");
       await page.click("#tab_1");
-
+      console.log(country);
       // get time activity
       await page.waitForSelector("#stApp_activitiesdateTime0");
       let activityDateTime = await page.evaluate(() => {

@@ -4412,8 +4412,9 @@ const trackings = async function () {
             ) {
               let trackings = source
                 .toString()
+                .replace(/\n/g, " ")
                 .trim()
-                .split(/\r?\n/)
+                .split(" ")
                 .map((e) => e.trim())
                 .filter((e) => e != "");
               console.log(trackings, track_status);
@@ -4504,8 +4505,9 @@ const booktrackings = async function () {
             ) {
               let trackings = source
                 .toString()
+                .replace(/\n/g, " ")
                 .trim()
-                .split(/\r?\n/)
+                .split(" ")
                 .map((e) => e.trim())
                 .filter((e) => e != "");
               console.log(trackings, track_status);
@@ -4571,8 +4573,9 @@ const update_trackings = async function () {
         if (source && ["transit", "issue", "unknown"].includes(track_status)) {
           let trackings = source
             .toString()
+            .replace(/\n/g, " ")
             .trim()
-            .split(/\r?\n/)
+            .split(" ")
             .map((e) => e.trim())
             .filter((e) => e != "");
           // console.log(trackings, track_status);
@@ -4742,8 +4745,9 @@ const update_booktrackings = async function () {
         if (source && ["transit", "issue", "unknown"].includes(track_status)) {
           let trackings = source
             .toString()
+            .replace(/\n/g, " ")
             .trim()
-            .split(/\r?\n/)
+            .split(" ")
             .map((e) => e.trim())
             .filter((e) => e != "");
           // console.log(trackings, track_status);
