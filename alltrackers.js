@@ -57,7 +57,7 @@ const alltrackers = async (pk, tracks) => {
         `Encountered an error while crawling ${data}. ${err.message}\nThis job will be retried`
       );
     } else {
-      console.error(`Failed to crawl ${data}: ${err.message}`);
+      console.error(`Failed to crawl ${data.src}: ${err.message}`);
     }
   });
   const ups = async function ({ page, data: data }) {
