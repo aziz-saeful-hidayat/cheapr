@@ -49,7 +49,7 @@ const alltrackers = async (pk, tracks) => {
     monitor: true,
     retryLimit: 2,
     retryDelay: 5000,
-    timeout: 60000,
+    timeout: 120000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {
