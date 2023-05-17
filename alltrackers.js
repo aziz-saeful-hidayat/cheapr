@@ -8,7 +8,7 @@ const moment = require("moment");
 const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
-  headless: false,
+  headless: true,
   args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
   executablePath: executablePath(),
   // userDataDir: "./user_data",
@@ -43,7 +43,7 @@ const alltrackers = async (pk, tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 1,
+    maxConcurrency: 3,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
