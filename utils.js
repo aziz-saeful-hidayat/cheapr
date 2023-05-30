@@ -48,6 +48,7 @@ const updateProduct = function (site, mpn, price, in_stock, title, url) {
     in_stock: in_stock,
     title: title,
     url: url,
+    match: true,
   };
   axios
     .post("https://cheapr.my.id/update_product", data, {

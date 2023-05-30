@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath, KnownDevices } = require("puppeteer");
 const axios = require("axios");
-const { updateProduct } = require("./utils");
+const { updateProduct, updateDataProduct } = require("./utils");
 const e = require("express");
 const iPhone = KnownDevices["iPhone X"];
 
@@ -132,64 +132,152 @@ const tester = async function () {
     await page.setDefaultNavigationTimeout(0);
     page.setDefaultTimeout(0);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
-    console.log(`https://www.radwell.com/en-US/Search/?q=${source}`);
-
-    await page.goto(`https://www.radwell.com/en-US/Search/?q=${source}`, {
-      waitUntil: "networkidle2",
+    let text = typeof source == "string" ? source.trim() : source.toString();
+    await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
+      waitUntil: "domcontentloaded",
     });
-    let url = await page.url();
-    const grabResult = async () => {
-      let url = await page.url();
-      let title = await page.evaluate(() => {
-        let el = document.querySelector("h1");
-        return el ? el.innerText : "";
-      });
-      let [price] = await page.$x(
-        "//h3[contains(text(),'Surplus Never Used Radwell Packaging')]//parent::div/div/span/span"
-      );
-      let price_text = await page.evaluate(
-        (price) => (price ? price.innerText : ""),
-        price
-      );
-      if (title.includes(source) && price) {
-        let stock = await page.$x(
-          "//h3[contains(text(),'Surplus Never Used Radwell Packaging')]//parent::div//parent::div/div[5]/div/div[@class='stock instock']"
-        );
+    await checkBlock(page);
+    await page.waitForSelector(
+      "#global-header > div.search-area > form > input.searchfield"
+    );
 
-        let in_stock = stock.length > 0;
-        updateProduct("Radwell", source, price_text, in_stock, title, url);
-      } else {
-        updateProduct("Radwell", source, null, true, null, null);
-      }
+    await page.evaluate(
+      () =>
+        (document.querySelector(
+          "#global-header > div.search-area > form > input.searchfield"
+        ).value = "")
+    );
+    await page.type(
+      "#global-header > div.search-area > form > input.searchfield",
+      text
+    );
+    await page.waitForSelector(
+      "#global-header > div.search-area > form > input.searchbutton"
+    );
+
+    await page.click(
+      "#global-header > div.search-area > form > input.searchbutton"
+    );
+
+    await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+    await checkBlock(page);
+    let [not_found] = await page.$x(
+      '//p[contains(text(),"We could not find a product to match your search criteria.")]'
+    );
+    let link1 = "";
+    let price = "";
+    let h1 = "";
+    let in_stock = true;
+    let empty_data = {
+      source: source,
+      link: link1,
+      title: h1,
+      price: price,
+      in_stock: in_stock,
     };
-    if (url.includes("/en-US/Buy/")) {
-      await grabResult();
-    } else {
-      let result = [];
-      let products = await page.$x('//*[@id="searchResults"]//h2');
-      console.log(products.length);
-      for (let r = 0; r < products.length; r++) {
-        let product = products[r];
-        let product_title = await page.evaluate(
-          (product) => (product ? product.innerText : ""),
-          product
-        );
-        let links = await product.$x(
-          './/parent::div//parent::div/div[@class="btnBuyOpt"]/a[@href]'
-        );
-        const href = await (await links[0].getProperty("href")).jsonValue();
-        if (product_title.trim() == source.trim()) {
-          result.push(href);
+    let data = {
+      source: source,
+      link: link1,
+      title: h1,
+      price: price,
+      in_stock: in_stock,
+    };
+    if (!not_found) {
+      let products = await page.$$eval(
+        "#partstable > tbody > tr",
+        (trs, text) => {
+          return trs.map((tr) => {
+            let objresult = { name: "", price: "", link: "" };
+            if (
+              tr.querySelector("td:nth-child(2) > span.modelname > a") &&
+              tr
+                .querySelector("td:nth-child(2) > span.modelname > a")
+                .innerText.replace(")", "")
+                .split("(")[1] ==
+                (typeof text == "string" ? text.toUpperCase() : text)
+            ) {
+              objresult["price"] = tr.querySelector("td.pricecell > span")
+                ? tr.querySelector("td.pricecell > span").innerText
+                : "";
+              objresult["name"] = tr.querySelector(
+                "td:nth-child(2) > span.modelname > a > b"
+              )
+                ? tr.querySelector("td:nth-child(2) > span.modelname > a > b")
+                    .innerText
+                : "";
+              objresult["link"] = tr.querySelector(
+                "td:nth-child(2) > span.modelname > a"
+              )
+                ? tr
+                    .querySelector("td:nth-child(2) > span.modelname > a")
+                    .getAttribute("href")
+                : "";
+              objresult["in_stock"] = tr.querySelector(
+                "td:nth-child(2) > div.search-instock > span.message-instock"
+              )
+                ? tr.querySelector(
+                    "td:nth-child(2) > div.search-instock > span.message-instock"
+                  ).innerText
+                : "";
+            }
+            return objresult;
+          });
+        },
+        text
+      );
+      products = products.filter((p) => {
+        return p["price"] != "";
+      });
+      if (products.length > 0) {
+        price = products[0]["price"];
+        h1 = products[0]["name"];
+        link1 = products[0]["link"];
+        stock = products[0]["in_stock"];
+        in_stock = price ? stock == "In Stock" : true;
+        data = {
+          source: source,
+          link: `https://www.barcodesinc.com${link1}`,
+          title: h1,
+          price: price,
+          in_stock: in_stock,
+        };
+        console.log(data);
+        updateDataProduct("Barcodes Inc", data);
+      } else {
+        price = await page.evaluate(() => {
+          let el = document.querySelector(
+            "#addtocart-top > div > div:nth-child(1) > div > div.cost.price > span:nth-child(2)"
+          );
+          return el ? el.innerText : "";
+        });
+        stock = await page.evaluate(() => {
+          let el = document.querySelector("div.instock");
+          return el ? el.innerText : "";
+        });
+        h1 = await page.evaluate(() => {
+          let el = document.querySelector("h1");
+          return el ? el.innerText : "";
+        });
+        link1 = await page.url();
+        in_stock = price ? stock == "In Stock" : true;
+        data = {
+          source: source,
+          link: link1,
+          title: h1,
+          price: price,
+          in_stock: in_stock,
+        };
+        if (h1.includes(text) && price) {
+          console.log(data);
+          updateDataProduct("Barcodes Inc", data);
+        } else {
+          console.log(empty_data);
+          updateDataProduct("Barcodes Inc", empty_data);
         }
       }
-      if (result.length > 0) {
-        await page.goto(`${result[0]}`, {
-          waitUntil: "networkidle2",
-        });
-        await grabResult();
-      } else {
-        updateProduct("Radwell", source, null, true, null, null);
-      }
+    } else {
+      console.log(empty_data);
+      updateDataProduct("Barcodes Inc", empty_data);
     }
 
     await browser.close();
