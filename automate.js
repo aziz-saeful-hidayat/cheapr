@@ -271,7 +271,6 @@ const sellerAmazon = async function () {
       let report_header = responseJson["data"]["getReportData"]["columns"];
       let business_report = responseJson["data"]["getReportData"]["rows"];
       business_report = business_report.reverse().slice(0, 90).reverse();
-      console.log(business_report);
       result["data"] = { header: report_header, data: business_report };
       await page.goto(
         "https://sellercentral.amazon.com/feedback-manager/index.html#/",
@@ -557,14 +556,14 @@ const sellerAmazon = async function () {
     let result_data = await grabData(1, 3);
     await writeSheet(result_data, "1377907402");
 
-    let result_data_2 = await grabData(4, 2);
-    await writeSheet(result_data_2, "1152900177");
-
-    let result_data_3 = await grabData(3, 1);
+    let result_data_3 = await grabData(3, 2);
     await writeSheet(result_data_3, "577275692");
 
     let result_data_4 = await grabData(5, 3);
     await writeSheet(result_data_4, "753769627");
+
+    let result_data_2 = await grabData(4, 2);
+    await writeSheet(result_data_2, "1152900177");
 
     let dateFormat = new Date();
 

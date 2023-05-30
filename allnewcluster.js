@@ -3,7 +3,12 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { executablePath } = require("puppeteer");
 const axios = require("axios");
-const { optimizePage, updateDataProduct, checkBlock } = require("./utils");
+const {
+  optimizePage,
+  updateDataProduct,
+  checkBlock,
+  updateProduct,
+} = require("./utils");
 const path = require("path");
 const creds = require(path.resolve(__dirname, "./cm-automation.json")); // the file saved above
 const { GoogleSpreadsheet } = require("google-spreadsheet");
@@ -25,7 +30,7 @@ const allnewcluster = async (mpns) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 3,
+    maxConcurrency: 4,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
@@ -420,12 +425,79 @@ const allnewcluster = async (mpns) => {
       return null;
     }
   };
+  const get_radwell = async function ({ page, data: source }) {
+    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await optimizePage(page);
+    if (source) {
+      let text = typeof source == "string" ? source.trim() : source.toString();
+      await page.goto(`https://www.radwell.com/en-US/Search/?q=${source}`, {
+        waitUntil: "networkidle2",
+      });
+      let url = await page.url();
+      const grabResult = async () => {
+        let url = await page.url();
+        let title = await page.evaluate(() => {
+          let el = document.querySelector("h1");
+          return el ? el.innerText : "";
+        });
+        let [price] = await page.$x(
+          "//h3[contains(text(),'Surplus Never Used Radwell Packaging')]//parent::div/div/span/span"
+        );
+        let price_text = await page.evaluate(
+          (price) => (price ? price.innerText : ""),
+          price
+        );
+        if (title.includes(source) && price) {
+          let stock = await page.$x(
+            "//h3[contains(text(),'Surplus Never Used Radwell Packaging')]//parent::div//parent::div/div[5]/div/div[@class='stock instock']"
+          );
+
+          let in_stock = stock.length > 0;
+          updateProduct("Radwell", source, price_text, in_stock, title, url);
+        } else {
+          updateProduct("Radwell", source, null, true, null, null);
+        }
+      };
+      if (url.includes("/en-US/Buy/")) {
+        await grabResult();
+      } else {
+        let result = [];
+        let products = await page.$x('//*[@id="searchResults"]//h2');
+        console.log(products.length);
+        for (let r = 0; r < products.length; r++) {
+          let product = products[r];
+          let product_title = await page.evaluate(
+            (product) => (product ? product.innerText : ""),
+            product
+          );
+          let links = await product.$x(
+            './/parent::div//parent::div/div[@class="btnBuyOpt"]/a[@href]'
+          );
+          const href = await (await links[0].getProperty("href")).jsonValue();
+          if (product_title.trim() == source.trim()) {
+            result.push(href);
+          }
+        }
+        if (result.length > 0) {
+          await page.goto(`${result[0]}`, {
+            waitUntil: "networkidle2",
+          });
+          await grabResult();
+        } else {
+          updateProduct("Radwell", source, null, true, null, null);
+        }
+      }
+    } else {
+      return null;
+    }
+  };
   for (let m = 0; m < mpns.length; m++) {
     let source = mpns[m];
     if (source) {
       cluster.queue(source, get_bhphotovideo);
       cluster.queue(source, get_adorama);
       cluster.queue(source, get_barcodesinc);
+      cluster.queue(source, get_radwell);
     }
   }
 
