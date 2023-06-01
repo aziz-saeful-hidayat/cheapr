@@ -9,7 +9,15 @@ const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
   headless: true,
-  args: ["--no-sandbox", "--proxy-server=dc.smartproxy.com:10000"],
+  args: [
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--disable-setuid-sandbox",
+    "--no-first-run",
+    "--no-sandbox",
+    "--no-zygote",
+    "--proxy-server=dc.smartproxy.com:10000",
+  ],
   executablePath: executablePath(),
   // userDataDir: "./user_data",
 };

@@ -275,36 +275,18 @@ const allnewcluster = async (mpns) => {
     await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
-      await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
-        waitUntil: "domcontentloaded",
-      });
+
+      await page.goto(
+        `https://www.barcodesinc.com/catalogsearch/result/?q=${text}`,
+        {
+          waitUntil: "networkidle2",
+        }
+      );
       await checkBlock(page);
-      await page.waitForSelector(
-        "#global-header > div.search-area > form > input.searchfield"
-      );
+      await page.waitForSelector("#search-spring-category-view");
 
-      await page.evaluate(
-        () =>
-          (document.querySelector(
-            "#global-header > div.search-area > form > input.searchfield"
-          ).value = "")
-      );
-      await page.type(
-        "#global-header > div.search-area > form > input.searchfield",
-        text
-      );
-      await page.waitForSelector(
-        "#global-header > div.search-area > form > input.searchbutton"
-      );
-
-      await page.click(
-        "#global-header > div.search-area > form > input.searchbutton"
-      );
-
-      await page.waitForNavigation({ waitUntil: "domcontentloaded" });
-      await checkBlock(page);
-      let [not_found] = await page.$x(
-        '//p[contains(text(),"We could not find a product to match your search criteria.")]'
+      let products = await page.$x(
+        '//section[@class="products list"]/div/main/article'
       );
       let link1 = "";
       let price = "";
@@ -324,41 +306,54 @@ const allnewcluster = async (mpns) => {
         price: price,
         in_stock: in_stock,
       };
-      if (!not_found) {
+      if (products.length > 0) {
+        await page.waitForSelector("#search-spring-category-view");
         let products = await page.$$eval(
-          "#partstable > tbody > tr",
+          "#search-spring-category-view > section > div > main > article",
           (trs, text) => {
             return trs.map((tr) => {
+              let sku = tr.querySelector(
+                "div > div.product-item-info > a > span"
+              )
+                ? tr.querySelector("div > div.product-item-info > a > span")
+                    .innerText
+                : "";
+              console.log(sku);
               let objresult = { name: "", price: "", link: "" };
               if (
-                tr.querySelector("td:nth-child(2) > span.modelname > a") &&
+                tr.querySelector("div > div.product-item-info > a > span") &&
                 tr
-                  .querySelector("td:nth-child(2) > span.modelname > a")
-                  .innerText.replace(")", "")
-                  .split("(")[1] ==
+                  .querySelector("div > div.product-item-info > a > span")
+                  .innerText.replace("(", "")
+                  .replace(")", "")
+                  .trim() ==
                   (typeof text == "string" ? text.toUpperCase() : text)
               ) {
-                objresult["price"] = tr.querySelector("td.pricecell > span")
-                  ? tr.querySelector("td.pricecell > span").innerText
+                objresult["price"] = tr.querySelector(
+                  "div > div.product-item-actions > span.product-item-price > div > span > span > del > span"
+                )
+                  ? tr.querySelector(
+                      "div > div.product-item-actions > span.product-item-price > div > span > span > del > span"
+                    ).innerText
                   : "";
                 objresult["name"] = tr.querySelector(
-                  "td:nth-child(2) > span.modelname > a > b"
+                  "div > div.product-item-info > a > h3"
                 )
-                  ? tr.querySelector("td:nth-child(2) > span.modelname > a > b")
+                  ? tr.querySelector("div > div.product-item-info > a > h3")
                       .innerText
                   : "";
                 objresult["link"] = tr.querySelector(
-                  "td:nth-child(2) > span.modelname > a"
+                  "div > div.product-item-info > a"
                 )
                   ? tr
-                      .querySelector("td:nth-child(2) > span.modelname > a")
+                      .querySelector("div > div.product-item-info > a")
                       .getAttribute("href")
                   : "";
                 objresult["in_stock"] = tr.querySelector(
-                  "td:nth-child(2) > div.search-instock > span.message-instock"
+                  "div > div.product-item-info > div.product-item-stock.in_stock > span"
                 )
                   ? tr.querySelector(
-                      "td:nth-child(2) > div.search-instock > span.message-instock"
+                      "div > div.product-item-info > div.product-item-stock.in_stock > span"
                     ).innerText
                   : "";
               }
@@ -378,7 +373,7 @@ const allnewcluster = async (mpns) => {
           in_stock = price ? stock == "In Stock" : true;
           data = {
             source: source,
-            link: `https://www.barcodesinc.com${link1}`,
+            link: link1,
             title: h1,
             price: price,
             in_stock: in_stock,
@@ -386,38 +381,12 @@ const allnewcluster = async (mpns) => {
           console.log(data);
           updateDataProduct("Barcodes Inc", data);
         } else {
-          price = await page.evaluate(() => {
-            let el = document.querySelector(
-              "#addtocart-top > div > div:nth-child(1) > div > div.cost.price > span:nth-child(2)"
-            );
-            return el ? el.innerText : "";
-          });
-          stock = await page.evaluate(() => {
-            let el = document.querySelector("div.instock");
-            return el ? el.innerText : "";
-          });
-          h1 = await page.evaluate(() => {
-            let el = document.querySelector("h1");
-            return el ? el.innerText : "";
-          });
-          link1 = await page.url();
-          in_stock = price ? stock == "In Stock" : true;
-          data = {
-            source: source,
-            link: link1,
-            title: h1,
-            price: price,
-            in_stock: in_stock,
-          };
-          if (h1.includes(text) && price) {
-            console.log(data);
-            updateDataProduct("Barcodes Inc", data);
-          } else {
-            console.log(empty_data);
-            updateDataProduct("Barcodes Inc", empty_data);
-          }
+          console.log("No Match Found");
+          console.log(empty_data);
+          updateDataProduct("Barcodes Inc", empty_data);
         }
       } else {
+        console.log("Not Found");
         console.log(empty_data);
         updateDataProduct("Barcodes Inc", empty_data);
       }
