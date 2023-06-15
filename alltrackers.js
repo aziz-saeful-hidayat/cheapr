@@ -8,7 +8,7 @@ const moment = require("moment");
 const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
+  headless: false,
   args: [
     "--disable-gpu",
     "--disable-dev-shm-usage",
@@ -273,9 +273,9 @@ const alltrackers = async (pk, tracks) => {
       return el ? el.innerText : "";
     });
     // get status delivery
-    await page.waitForSelector(
-      "trk-shared-shipment-delivery-status > div:nth-child(2)"
-    );
+    // await page.waitForSelector(
+    //   "trk-shared-shipment-delivery-status > div:nth-child(2)"
+    // );
     let status = await page.evaluate(() => {
       let el = document.querySelector(
         "trk-shared-shipment-delivery-status > div:nth-child(2)"
@@ -283,7 +283,7 @@ const alltrackers = async (pk, tracks) => {
       return el ? el.innerText : "";
     });
     // get destination
-    await page.waitForSelector("div.shipment-status-progress-step");
+    // await page.waitForSelector("div.shipment-status-progress-step");
     let destination = await page.$$eval(
       "div.shipment-status-progress-step",
       (elements) =>
@@ -293,7 +293,7 @@ const alltrackers = async (pk, tracks) => {
     // get eta
     let eta_date = null;
     let delivery_date = null;
-    await page.waitForSelector("span.deliveryDateTextBetween");
+    // await page.waitForSelector("span.deliveryDateTextBetween");
     let estDelivery = await page.evaluate(() => {
       let el = document.querySelector("span.deliveryDateTextBetween");
       return el ? el.innerText : "";
