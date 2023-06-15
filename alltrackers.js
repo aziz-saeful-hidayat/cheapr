@@ -8,7 +8,7 @@ const moment = require("moment");
 const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
-  headless: false,
+  headless: true,
   args: [
     "--disable-gpu",
     "--disable-dev-shm-usage",
