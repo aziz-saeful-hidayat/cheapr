@@ -8,7 +8,7 @@ const moment = require("moment");
 const iPhone = KnownDevices["iPhone X"];
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
+  headless: false,
   args: [
     "--disable-gpu",
     "--disable-dev-shm-usage",
@@ -273,9 +273,13 @@ const alltrackers = async (pk, tracks) => {
       return el ? el.innerText : "";
     });
     // get status delivery
-    await page.waitForSelector("div.shipment-delivery-status");
+    await page.waitForSelector(
+      "trk-shared-shipment-delivery-status > div:nth-child(2)"
+    );
     let status = await page.evaluate(() => {
-      let el = document.querySelector("div.shipment-delivery-status");
+      let el = document.querySelector(
+        "trk-shared-shipment-delivery-status > div:nth-child(2)"
+      );
       return el ? el.innerText : "";
     });
     // get destination
