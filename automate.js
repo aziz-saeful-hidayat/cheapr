@@ -4371,14 +4371,14 @@ const trackings = async function () {
         let issue = { red: 1, blue: 1 };
         let refunded = { red: 1 };
 
-        await resSheet.loadCells(`AN${start}:AN${end}`);
-        await resSheet.loadCells(`V${start}:V${end}`);
+        await resSheet.loadCells(`AP${start}:AP${end}`);
+        await resSheet.loadCells(`X${start}:X${end}`);
         await resSheet.loadCells(`J${start}:J${end}`);
 
         let tracking_numbers = [];
         for (let i = start; i < end; i++) {
-          let cell = resSheet.getCellByA1(`AN${i}`);
-          let addr = resSheet.getCellByA1(`V${i}`).value;
+          let cell = resSheet.getCellByA1(`AP${i}`);
+          let addr = resSheet.getCellByA1(`X${i}`).value;
           let acell = resSheet.getCellByA1(`J${i}`).value;
 
           if (typeof acell == "string" && acell.includes("Delivered")) {
@@ -4543,10 +4543,10 @@ const update_trackings = async function () {
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
     let not_started = { red: 1, green: 1, blue: 1 };
-    await resSheet.loadCells(`AL${start}:AN${end}`);
+    await resSheet.loadCells(`AL${start}:AQ${end}`);
     let tracking_numbers = [];
     for (let i = start; i < end; i++) {
-      let cell = resSheet.getCellByA1(`AM${i}`);
+      let cell = resSheet.getCellByA1(`AP${i}`);
       if (cell != undefined) {
         let source = cell.value;
         let bgcolor = undefined;
@@ -4600,23 +4600,23 @@ const update_trackings = async function () {
         if (result.length == 1) {
           let result_data = result[0];
           console.log(result_data);
-          let carrier_cell = resSheet.getCellByA1(`AL${idx}`);
+          let carrier_cell = resSheet.getCellByA1(`AO${idx}`);
           carrier_cell.value = result_data["carrier"];
-          let eta_cell = resSheet.getCellByA1(`AN${idx}`);
+          let eta_cell = resSheet.getCellByA1(`AQ${idx}`);
           eta_cell.value = result_data["eta_date"]
             ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
             : "";
           if (result_data["status"] == "D") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
-              let cell = resSheet.getCellByA1(`AM${idx}`);
+              let cell = resSheet.getCellByA1(`AP${idx}`);
               cell.backgroundColor = delivered;
-              console.log(`AM${idx}`, data[0], "Delivered");
+              console.log(`AP${idx}`, data[0], "Delivered");
             }
           } else if (result_data["status"] == "I") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(issue)) {
-              let cell = resSheet.getCellByA1(`AM${idx}`);
+              let cell = resSheet.getCellByA1(`AP${idx}`);
               cell.backgroundColor = issue;
-              console.log(`AM${idx}`, data[0], "Issue");
+              console.log(`AP${idx}`, data[0], "Issue");
               sendSlack(
                 "#tracking-status",
                 `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AM${idx}`
@@ -4624,15 +4624,15 @@ const update_trackings = async function () {
             }
           } else if (result_data["status"] == "T") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(transit)) {
-              let cell = resSheet.getCellByA1(`AM${idx}`);
+              let cell = resSheet.getCellByA1(`AP${idx}`);
               cell.backgroundColor = transit;
-              console.log(`AM${idx}`, data[0], "Transit");
+              console.log(`AP${idx}`, data[0], "Transit");
             }
           } else if (result_data["status"] == "N") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(not_started)) {
               let cell = resSheet.getCellByA1(`AM${idx}`);
               cell.backgroundColor = not_started;
-              console.log(`AM${idx}`, data[0], "Not Started");
+              console.log(`AP${idx}`, data[0], "Not Started");
             }
           }
         }
@@ -4645,9 +4645,9 @@ const update_trackings = async function () {
           let result = await response.data.results;
           if (result.length == 1) {
             let result_data = result[0];
-            let carrier_cell = resSheet.getCellByA1(`AL${idx}`);
+            let carrier_cell = resSheet.getCellByA1(`AO${idx}`);
             carrier_cell.value = result_data["carrier"];
-            let eta_cell = resSheet.getCellByA1(`AN${idx}`);
+            let eta_cell = resSheet.getCellByA1(`AQ${idx}`);
             eta_cell.value = result_data["eta_date"]
               ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
               : "";
@@ -4660,25 +4660,25 @@ const update_trackings = async function () {
 
         if (checker(allstatus)) {
           if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
-            let cell = resSheet.getCellByA1(`AM${idx}`);
+            let cell = resSheet.getCellByA1(`AP${idx}`);
             cell.backgroundColor = delivered;
-            console.log(`AM${idx}`, data[0], "Delivered");
+            console.log(`AP${idx}`, data[0], "Delivered");
           }
         } else if (checker3(allstatus)) {
           if (JSON.stringify(bgcolor) !== JSON.stringify(issue)) {
-            let cell = resSheet.getCellByA1(`AM${idx}`);
+            let cell = resSheet.getCellByA1(`AP${idx}`);
             cell.backgroundColor = issue;
-            console.log(`AM${idx}`, data[0], "Issue");
+            console.log(`AP${idx}`, data[0], "Issue");
             sendSlack(
               "#tracking-status",
-              `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AM${idx}`
+              `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AP${idx}`
             );
           }
         } else if (checker2(allstatus)) {
           if (JSON.stringify(bgcolor) !== JSON.stringify(transit)) {
-            let cell = resSheet.getCellByA1(`AM${idx}`);
+            let cell = resSheet.getCellByA1(`AP${idx}`);
             cell.backgroundColor = transit;
-            console.log(`AM${idx}`, data[0], "Transit");
+            console.log(`AP${idx}`, data[0], "Transit");
           }
         }
       }
