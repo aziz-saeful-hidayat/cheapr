@@ -4371,15 +4371,15 @@ const trackings = async function () {
         let issue = { red: 1, blue: 1 };
         let refunded = { red: 1 };
 
-        await resSheet.loadCells(`AP${start}:AP${end}`);
-        await resSheet.loadCells(`X${start}:X${end}`);
-        await resSheet.loadCells(`J${start}:J${end}`);
+        await resSheet.loadCells(`AQ${start}:AQ${end}`);
+        await resSheet.loadCells(`Y${start}:Y${end}`);
+        await resSheet.loadCells(`K${start}:K${end}`);
 
         let tracking_numbers = [];
         for (let i = start; i < end; i++) {
-          let cell = resSheet.getCellByA1(`AP${i}`);
-          let addr = resSheet.getCellByA1(`X${i}`).value;
-          let acell = resSheet.getCellByA1(`J${i}`).value;
+          let cell = resSheet.getCellByA1(`AQ${i}`);
+          let addr = resSheet.getCellByA1(`Y${i}`).value;
+          let acell = resSheet.getCellByA1(`K${i}`).value;
 
           if (typeof acell == "string" && acell.includes("Delivered")) {
             break;
@@ -4543,10 +4543,10 @@ const update_trackings = async function () {
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
     let not_started = { red: 1, green: 1, blue: 1 };
-    await resSheet.loadCells(`AL${start}:AQ${end}`);
+    await resSheet.loadCells(`AL${start}:AR${end}`);
     let tracking_numbers = [];
     for (let i = start; i < end; i++) {
-      let cell = resSheet.getCellByA1(`AP${i}`);
+      let cell = resSheet.getCellByA1(`AQ${i}`);
       if (cell != undefined) {
         let source = cell.value;
         let bgcolor = undefined;
@@ -4600,39 +4600,39 @@ const update_trackings = async function () {
         if (result.length == 1) {
           let result_data = result[0];
           console.log(result_data);
-          let carrier_cell = resSheet.getCellByA1(`AO${idx}`);
+          let carrier_cell = resSheet.getCellByA1(`AP${idx}`);
           carrier_cell.value = result_data["carrier"];
-          let eta_cell = resSheet.getCellByA1(`AQ${idx}`);
+          let eta_cell = resSheet.getCellByA1(`AR${idx}`);
           eta_cell.value = result_data["eta_date"]
             ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
             : "";
           if (result_data["status"] == "D") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
-              let cell = resSheet.getCellByA1(`AP${idx}`);
+              let cell = resSheet.getCellByA1(`AQ${idx}`);
               cell.backgroundColor = delivered;
-              console.log(`AP${idx}`, data[0], "Delivered");
+              console.log(`AQ${idx}`, data[0], "Delivered");
             }
           } else if (result_data["status"] == "I") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(issue)) {
-              let cell = resSheet.getCellByA1(`AP${idx}`);
+              let cell = resSheet.getCellByA1(`AQ${idx}`);
               cell.backgroundColor = issue;
-              console.log(`AP${idx}`, data[0], "Issue");
+              console.log(`AQ${idx}`, data[0], "Issue");
               sendSlack(
                 "#tracking-status",
-                `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AM${idx}`
+                `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AQ${idx}`
               );
             }
           } else if (result_data["status"] == "T") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(transit)) {
-              let cell = resSheet.getCellByA1(`AP${idx}`);
+              let cell = resSheet.getCellByA1(`AQ${idx}`);
               cell.backgroundColor = transit;
-              console.log(`AP${idx}`, data[0], "Transit");
+              console.log(`AQ${idx}`, data[0], "Transit");
             }
           } else if (result_data["status"] == "N") {
             if (JSON.stringify(bgcolor) !== JSON.stringify(not_started)) {
-              let cell = resSheet.getCellByA1(`AM${idx}`);
+              let cell = resSheet.getCellByA1(`AQ${idx}`);
               cell.backgroundColor = not_started;
-              console.log(`AP${idx}`, data[0], "Not Started");
+              console.log(`AQ${idx}`, data[0], "Not Started");
             }
           }
         }
@@ -4645,9 +4645,9 @@ const update_trackings = async function () {
           let result = await response.data.results;
           if (result.length == 1) {
             let result_data = result[0];
-            let carrier_cell = resSheet.getCellByA1(`AO${idx}`);
+            let carrier_cell = resSheet.getCellByA1(`AP${idx}`);
             carrier_cell.value = result_data["carrier"];
-            let eta_cell = resSheet.getCellByA1(`AQ${idx}`);
+            let eta_cell = resSheet.getCellByA1(`AR${idx}`);
             eta_cell.value = result_data["eta_date"]
               ? moment(result_data["eta_date"], "YYYY-MM-DD").format("M/D/YYYY")
               : "";
@@ -4660,25 +4660,25 @@ const update_trackings = async function () {
 
         if (checker(allstatus)) {
           if (JSON.stringify(bgcolor) !== JSON.stringify(delivered)) {
-            let cell = resSheet.getCellByA1(`AP${idx}`);
+            let cell = resSheet.getCellByA1(`AQ${idx}`);
             cell.backgroundColor = delivered;
-            console.log(`AP${idx}`, data[0], "Delivered");
+            console.log(`AQ${idx}`, data[0], "Delivered");
           }
         } else if (checker3(allstatus)) {
           if (JSON.stringify(bgcolor) !== JSON.stringify(issue)) {
-            let cell = resSheet.getCellByA1(`AP${idx}`);
+            let cell = resSheet.getCellByA1(`AQ${idx}`);
             cell.backgroundColor = issue;
-            console.log(`AP${idx}`, data[0], "Issue");
+            console.log(`AQ${idx}`, data[0], "Issue");
             sendSlack(
               "#tracking-status",
-              `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AP${idx}`
+              `ALERT!!!\nIssue found for tracking number ${data[0]} in Cell AQ${idx}`
             );
           }
         } else if (checker2(allstatus)) {
           if (JSON.stringify(bgcolor) !== JSON.stringify(transit)) {
-            let cell = resSheet.getCellByA1(`AP${idx}`);
+            let cell = resSheet.getCellByA1(`AQ${idx}`);
             cell.backgroundColor = transit;
-            console.log(`AP${idx}`, data[0], "Transit");
+            console.log(`AQ${idx}`, data[0], "Transit");
           }
         }
       }
