@@ -4381,9 +4381,9 @@ const trackings = async function () {
           let addr = resSheet.getCellByA1(`Y${i}`).value;
           let acell = resSheet.getCellByA1(`K${i}`).value;
 
-          if (typeof acell == "string" && acell.includes("Delivered")) {
-            break;
-          }
+          // if (typeof acell == "string" && acell.includes("Delivered")) {
+          //   break;
+          // }
           if (cell != undefined) {
             let source = cell.value;
             let bgcolor = undefined;
