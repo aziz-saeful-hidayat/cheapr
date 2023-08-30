@@ -4380,7 +4380,6 @@ const trackings = async function () {
           let cell = resSheet.getCellByA1(`AQ${i}`);
           let addr = resSheet.getCellByA1(`Y${i}`).value;
           let acell = resSheet.getCellByA1(`K${i}`).value;
-          let etacell = resSheet.getCellByA1(`AR${i}`);
 
           if (typeof acell == "string" && acell.includes("Delivered")) {
             break;
