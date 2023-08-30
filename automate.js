@@ -4380,6 +4380,7 @@ const trackings = async function () {
           let cell = resSheet.getCellByA1(`AQ${i}`);
           let addr = resSheet.getCellByA1(`Y${i}`).value;
           let acell = resSheet.getCellByA1(`K${i}`).value;
+          let etacell = resSheet.getCellByA1(`AR${i}`);
 
           if (typeof acell == "string" && acell.includes("Delivered")) {
             break;
@@ -4405,10 +4406,7 @@ const trackings = async function () {
               }
             };
             let track_status = status();
-            if (
-              source &&
-              ["transit", "issue", "unknown"].includes(track_status)
-            ) {
+            if (source) {
               let trackings = source
                 .toString()
                 .replace(/\n/g, " ")
@@ -4417,7 +4415,23 @@ const trackings = async function () {
                 .map((e) => e.trim())
                 .filter((e) => e != "");
               console.log(trackings, track_status);
-              tracking_numbers.push({ idx: i, data: trackings, addr: addr });
+              if (["transit", "issue", "unknown"].includes(track_status)) {
+                tracking_numbers.push({ idx: i, data: trackings, addr: addr });
+              } else {
+                let response = await axios.get(
+                  `https://cheapr.my.id/tracking/?tracking_number=${trackings}/`
+                );
+                let result = await response.data.results;
+                if (result.length > 0) {
+                  let tracking_pk = result[0].pk;
+                  await axios.patch(
+                    `https://cheapr.my.id/tracking/${tracking_pk}/`,
+                    {
+                      status: "D",
+                    }
+                  );
+                }
+              }
             }
           }
         }
@@ -4498,10 +4512,7 @@ const booktrackings = async function () {
               }
             };
             let track_status = status();
-            if (
-              source &&
-              ["transit", "issue", "unknown"].includes(track_status)
-            ) {
+            if (source) {
               let trackings = source
                 .toString()
                 .replace(/\n/g, " ")
@@ -4510,7 +4521,23 @@ const booktrackings = async function () {
                 .map((e) => e.trim())
                 .filter((e) => e != "");
               console.log(trackings, track_status);
-              tracking_numbers.push({ idx: i, data: trackings, addr: addr });
+              if (["transit", "issue", "unknown"].includes(track_status)) {
+                tracking_numbers.push({ idx: i, data: trackings, addr: addr });
+              } else {
+                let response = await axios.get(
+                  `https://cheapr.my.id/tracking/?tracking_number=${trackings}/`
+                );
+                let result = await response.data.results;
+                if (result.length > 0) {
+                  let tracking_pk = result[0].pk;
+                  await axios.patch(
+                    `https://cheapr.my.id/tracking/${tracking_pk}/`,
+                    {
+                      status: "D",
+                    }
+                  );
+                }
+              }
             }
           }
         }
