@@ -4418,7 +4418,7 @@ const trackings = async function () {
                 tracking_numbers.push({ idx: i, data: trackings, addr: addr });
               } else {
                 let response = await axios.get(
-                  `https://cheapr.my.id/tracking/?tracking_number=${trackings}/`
+                  `https://cheapr.my.id/tracking/?tracking_number=${trackings}`
                 );
                 let result = await response.data.results;
                 if (result.length > 0) {
