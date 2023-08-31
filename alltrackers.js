@@ -426,7 +426,6 @@ const alltrackers = async (pk, tracks) => {
   const usps = async function ({ page, data: data }) {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
-    await page.setJavaScriptEnabled(true);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
