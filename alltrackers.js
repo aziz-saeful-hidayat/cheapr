@@ -122,7 +122,7 @@ const alltrackers = async (pk, tracks) => {
           return el ? el.innerText.trim() : "";
         });
         let month_date = estDelivery
-          .split(",")[1]
+          ?.split(",")[1]
           .split("by")[0]
           .split("at")[0]
           .trim();
@@ -133,7 +133,7 @@ const alltrackers = async (pk, tracks) => {
           return el ? el.innerText.trim() : "";
         });
         let month_date = estDelivery
-          .split(",")[1]
+          ?.split(",")[1]
           .split("by")[0]
           .split("at")[0]
           .trim();
@@ -357,7 +357,7 @@ const alltrackers = async (pk, tracks) => {
     });
 
     if (estDelivery) {
-      let month_date = estDelivery.split("by")[0].split("at")[0].trim();
+      let month_date = estDelivery?.split("by")[0].split("at")[0].trim();
       if (status.trim() == "Delivered") {
         delivery_date = moment(month_date, "M/D/YYYY").format("YYYY-MM-DD");
       } else {
@@ -702,14 +702,14 @@ const alltrackers = async (pk, tracks) => {
         stts = "N";
       }
       if (estDelivery && status.trim() == "Delivered") {
-        delivery_date = moment(estDelivery.split("at")[0].trim()).format(
+        delivery_date = moment(estDelivery?.split("at")[0].trim()).format(
           "YYYY-MM-DD"
         );
       } else if (
         !milestone.includes("Electronic information submitted by shipper") &&
         !estDelivery.includes("Item delayed")
       ) {
-        eta_date = moment(estDelivery.split(",")[1].trim(), "MMM. D").format(
+        eta_date = moment(estDelivery?.split(",")[1].trim(), "MMM. D").format(
           "YYYY-MM-DD"
         );
         stts = "T";
