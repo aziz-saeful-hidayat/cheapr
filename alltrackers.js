@@ -210,7 +210,7 @@ const alltrackers = async (pk, tracks) => {
           payload = { ...payload, delivery_date: delivery_date };
         }
         await axios
-          .post("https://cheapr.my.id/tracking/", payload, {
+          .post("https://cheapr.my.id/tracking/update_or_create/", payload, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -227,7 +227,7 @@ const alltrackers = async (pk, tracks) => {
     } else {
       await axios
         .post(
-          "https://cheapr.my.id/tracking/",
+          "https://cheapr.my.id/tracking/update_or_create/",
           {
             tracking_number: text,
             carrier: "UPS",
@@ -328,7 +328,7 @@ const alltrackers = async (pk, tracks) => {
       payload = { ...payload, delivery_date: delivery_date };
     }
     await axios
-      .post("https://cheapr.my.id/tracking/", payload, {
+      .post("https://cheapr.my.id/tracking/update_or_create/", payload, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -457,7 +457,7 @@ const alltrackers = async (pk, tracks) => {
         payload = { ...payload, delivery_date: delivery_date };
       }
       await axios
-        .post("https://cheapr.my.id/tracking/", payload, {
+        .post("https://cheapr.my.id/tracking/update_or_create/", payload, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -482,7 +482,7 @@ const alltrackers = async (pk, tracks) => {
         src_address: addr,
       };
       await axios
-        .post("https://cheapr.my.id/tracking/", payload, {
+        .post("https://cheapr.my.id/tracking/update_or_create/", payload, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -592,7 +592,7 @@ const alltrackers = async (pk, tracks) => {
           payload = { ...payload, delivery_date: delivery_date };
         }
         await axios
-          .post("https://cheapr.my.id/tracking/", payload, {
+          .post("https://cheapr.my.id/tracking/update_or_create/", payload, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -609,7 +609,7 @@ const alltrackers = async (pk, tracks) => {
     } else {
       await axios
         .post(
-          "https://cheapr.my.id/tracking/",
+          "https://cheapr.my.id/tracking/update_or_create/",
           {
             tracking_number: text,
             carrier: "UPS",
