@@ -50,14 +50,14 @@ let get_status = (text) => {
 const alltrackers = async (pk, tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
-    concurrency: Cluster.CONCURRENCY_BROWSER,
+    concurrency: Cluster.CONCURRENCY_PAGE,
     maxConcurrency: 2,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    retryLimit: 4,
+    retryLimit: 3,
     retryDelay: 5000,
-    timeout: 30000,
+    timeout: 60000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {
