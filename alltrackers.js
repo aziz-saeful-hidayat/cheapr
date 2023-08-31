@@ -385,13 +385,39 @@ const alltrackers = async (pk, tracks) => {
       payload = { ...payload, delivery_date: delivery_date };
     }
     await axios
-      .post("https://cheapr.my.id/tracking/", payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then(function (response) {
+      .get(
+        `https://cheapr.my.id/tracking/?tracking_number=${payload.tracking_number}`
+      )
+      .then(async function (response) {
         console.log(response.data);
+        let results = response.data.results;
+        if (results.length == 0) {
+          await axios
+            .post("https://cheapr.my.id/tracking/", payload, {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (error) {
+              console.log(error.response.data);
+            });
+        } else {
+          await axios
+            .patch(`https://cheapr.my.id/tracking/${results[0].pk}/`, payload, {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (error) {
+              console.log(error.response.data);
+            });
+        }
       })
       .catch(function (error) {
         console.log(error.response.data);
