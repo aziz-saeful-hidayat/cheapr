@@ -51,10 +51,11 @@ const alltrackers = async (pk, tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 3,
+    maxConcurrency: 2,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
+    retryLimit: 4,
     retryDelay: 5000,
     timeout: 30000,
   });
@@ -425,6 +426,7 @@ const alltrackers = async (pk, tracks) => {
   const usps = async function ({ page, data: data }) {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
+    await page.setJavaScriptEnabled(true);
     await optimizePage(page);
     await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
     await page.goto(
@@ -479,6 +481,7 @@ const alltrackers = async (pk, tracks) => {
         let el = document.querySelector("span.eta_snip:nth-child(1) .day");
         return el ? el.innerText : "";
       });
+      console.log("eta_day: ", eta_day);
       let eta_snip = await page.$$eval(
         "span.eta_snip:nth-child(1)",
         (elements, eta_day) =>
@@ -499,7 +502,7 @@ const alltrackers = async (pk, tracks) => {
             : "",
         [eta_day]
       );
-
+      console.log("eta_snip: ", eta_snip);
       let stts = get_status(status);
 
       let eta_date = null;

@@ -4530,22 +4530,22 @@ const booktrackings = async function () {
               if (["transit", "issue", "unknown"].includes(track_status)) {
                 tracking_numbers.push({ idx: i, data: trackings, addr: addr });
               } else {
-                let response = await axios.get(
-                  `https://cheapr.my.id/tracking/?tracking_number=${trackings}`
-                );
-                let result = await response.data.results;
-                if (result.length > 0) {
-                  let tracking_pk = result[0].pk;
-                  console.log(
-                    `Updating https://cheapr.my.id/tracking/${tracking_pk}/`
-                  );
-                  await axios.patch(
-                    `https://cheapr.my.id/tracking/${tracking_pk}/`,
-                    {
-                      status: "D",
-                    }
-                  );
-                }
+                // let response = await axios.get(
+                //   `https://cheapr.my.id/tracking/?tracking_number=${trackings}`
+                // );
+                // let result = await response.data.results;
+                // if (result.length > 0) {
+                //   let tracking_pk = result[0].pk;
+                //   console.log(
+                //     `Updating https://cheapr.my.id/tracking/${tracking_pk}/`
+                //   );
+                //   await axios.patch(
+                //     `https://cheapr.my.id/tracking/${tracking_pk}/`,
+                //     {
+                //       status: "D",
+                //     }
+                //   );
+                // }
               }
             }
           }
