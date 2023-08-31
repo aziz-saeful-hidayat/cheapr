@@ -51,13 +51,12 @@ const alltrackers = async (pk, tracks) => {
   puppeteer.use(StealthPlugin());
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 2,
+    maxConcurrency: 3,
     puppeteer: puppeteer,
     puppeteerOptions: PUPPETEER_OPTIONS,
     monitor: true,
-    retryLimit: 2,
     retryDelay: 5000,
-    timeout: 240000,
+    timeout: 30000,
   });
   cluster.on("taskerror", (err, data, willRetry) => {
     if (willRetry) {
