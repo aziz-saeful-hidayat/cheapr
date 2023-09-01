@@ -4689,7 +4689,7 @@ const update_trackings = async function () {
     let transit = { red: 1, green: 1 };
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
-    let not_started = { red: 1, green: 1, blue: 1 };
+    let not_started = { red: 0.9, green: 0.55, blue: 0.54 };
     await resSheet.loadCells(`AL${start}:AR${end}`);
     let tracking_numbers = [];
     for (let i = start; i < end; i++) {
@@ -4861,7 +4861,7 @@ const update_booktrackings = async function () {
     let transit = { red: 1, green: 1 };
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
-    let not_started = { red: 1, green: 1, blue: 1 };
+    let not_started = { red: 0.9, green: 0.55, blue: 0.54 };
     await resSheet.loadCells(`T${start}:V${end}`);
     let tracking_numbers = [];
     for (let i = start; i < end; i++) {
@@ -5032,7 +5032,7 @@ const update_ingramtrackings = async function () {
     let transit = { red: 1, green: 1 };
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
-    let not_started = { red: 1, green: 1, blue: 1 };
+    let not_started = { red: 0.9, green: 0.55, blue: 0.54 };
     await resSheet.loadCells(`T${start}:V${rowCount}`);
     let tracking_numbers = [];
     for (let i = start; i < rowCount; i++) {
@@ -5108,7 +5108,7 @@ const update_ingramtrackings = async function () {
               console.log(`T${idx}`, data[0], "Issue");
               sendSlack(
                 "#tracking-status",
-                `ALERT!!!\nIssue found for Book tracking number ${data[0]} in Cell T${idx}`
+                `ALERT!!!\nIssue found for Ingram tracking number ${data[0]} in Cell T${idx}`
               );
             }
           } else if (result_data["status"] == "T") {
