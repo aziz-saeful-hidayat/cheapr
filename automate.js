@@ -5033,9 +5033,9 @@ const update_ingramtrackings = async function () {
     let issue = { red: 1, blue: 1 };
     let refunded = { red: 1 };
     let not_started = { red: 1, green: 1, blue: 1 };
-    await resSheet.loadCells(`T${start}:V${end}`);
+    await resSheet.loadCells(`T${start}:V${rowCount}`);
     let tracking_numbers = [];
-    for (let i = start; i < end; i++) {
+    for (let i = start; i < rowCount; i++) {
       let cell = resSheet.getCellByA1(`T${i}`);
       if (cell != undefined) {
         let source = cell.value;
