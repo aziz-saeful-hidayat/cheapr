@@ -14,8 +14,10 @@ const {
   checker2,
   trackings,
   booktrackings,
+  ingramtrackings,
   update_trackings,
   update_booktrackings,
+  update_ingramtrackings,
   ebay,
   ppcAmazon,
   ppcWalmart,
@@ -150,25 +152,35 @@ app.get("/trackings/", function (req, res) {
   trackings();
   res.send({ message: "Ok" });
 });
+app.get("/update_trackings/", function (req, res) {
+  update_trackings();
+  res.send({ message: "Ok" });
+});
+
 app.get("/booktrackings/", function (req, res) {
   // Retrieve the tag from our URL path
   booktrackings();
-  res.send({ message: "Ok" });
-});
-
-app.get("/ebay/", function (req, res) {
-  ebay();
-  res.send({ message: "Ok" });
-});
-
-app.get("/update_trackings/", function (req, res) {
-  update_trackings();
   res.send({ message: "Ok" });
 });
 app.get("/update_booktrackings/", function (req, res) {
   update_booktrackings();
   res.send({ message: "Ok" });
 });
+
+app.get("/ingramtrackings/", function (req, res) {
+  // Retrieve the tag from our URL path
+  ingramtrackings();
+  res.send({ message: "Ok" });
+});
+app.get("/update_ingramtrackings/", function (req, res) {
+  update_ingramtrackings();
+  res.send({ message: "Ok" });
+});
+app.get("/ebay/", function (req, res) {
+  ebay();
+  res.send({ message: "Ok" });
+});
+
 app.get("/bsrcluster/:keyword", function (req, res) {
   if (req.keyword) {
     console.log(req.keyword);
