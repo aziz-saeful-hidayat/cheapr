@@ -49,7 +49,10 @@ const barcodesinc = async () => {
       }
     };
     await optimizePage(page);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await page.goto("https://www.barcodesinc.com/search.htm?PA03770-B615", {
       waitUntil: "networkidle2",
     });

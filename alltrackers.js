@@ -73,7 +73,10 @@ const alltrackers = async (pk, tracks) => {
     let text = typeof src == "string" ? src.trim() : src.toString();
     let url = `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`;
     await optimizePage(page);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await page.goto(
       `https://www.ups.com/track?loc=en_US&tracknum=${text}&requester=ST/trackdetails`
     );
@@ -315,7 +318,10 @@ const alltrackers = async (pk, tracks) => {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
     await optimizePage(page);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await page.goto(
       `https://www.fedex.com/fedextrack/?trknbr=${text}&trkqual=`,
       {
@@ -427,7 +433,10 @@ const alltrackers = async (pk, tracks) => {
     let { src, addr } = data;
     let text = typeof src == "string" ? src.trim() : src.toString();
     await optimizePage(page);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await page.goto(
       `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${text}`,
       {
@@ -644,7 +653,10 @@ const alltrackers = async (pk, tracks) => {
     let text = typeof src == "string" ? src.trim() : src.toString();
     let url = `https://www.canadapost-postescanada.ca/track-reperage/en#/details/${text}`;
     await optimizePage(page);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await page.goto(
       `https://www.canadapost-postescanada.ca/track-reperage/en#/details/${text}`,
       {

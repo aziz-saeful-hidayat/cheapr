@@ -131,7 +131,10 @@ const tester = async function () {
     await page.setJavaScriptEnabled(true);
     await page.setDefaultNavigationTimeout(0);
     page.setDefaultTimeout(0);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(
       `https://www.barcodesinc.com/catalogsearch/result/?q=${text}`,

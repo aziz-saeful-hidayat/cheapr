@@ -49,7 +49,10 @@ const bhphotovideo = async () => {
       }
     };
     await optimizePage(page);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
 
     let text = typeof source == "string" ? source.trim() : source;
     await page.goto(`https://www.bhphotovideo.com/c/search?q=${text}&sts=ma`, {

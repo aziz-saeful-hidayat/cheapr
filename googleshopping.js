@@ -36,7 +36,10 @@ const googleshopping = async (mpns) => {
     console.log(source);
 
     page.setDefaultTimeout(0);
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     let text = typeof source == "string" ? source.trim() : source.toString();
     await page.goto(`https://shopping.google.com/`, {
       waitUntil: "networkidle2",

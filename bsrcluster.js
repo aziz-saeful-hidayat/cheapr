@@ -46,9 +46,12 @@ const bsrcluster = async (keyword) => {
   const extract_departments = async function (source) {
     const browser = await puppeteer.launch(PUPPETEER_OPTIONS);
     const page = await browser.newPage();
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
 
-    // await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    // await page.authenticate({ username: "spb4pudldd", password: "2selBrep0w0TmcgL5Y" });
 
     let products = [];
     let get_counter = async () => {
@@ -187,7 +190,10 @@ const bsrcluster = async (keyword) => {
     }
     if (result.length < 1 || crawl) {
       await optimizePage(page);
-      await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+      await page.authenticate({
+        username: "spb4pudldd",
+        password: "2selBrep0w0TmcgL5Y",
+      });
       await page.goto(`https://www.amazon.com${clean_text}`, {
         waitUntil: "domcontentloaded",
       });

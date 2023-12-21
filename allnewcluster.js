@@ -49,7 +49,10 @@ const allnewcluster = async (mpns) => {
   });
   // We don't define a task and instead use own functions
   const get_bhphotovideo = async function ({ page, data: source }) {
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await optimizePage(page);
 
     if (source) {
@@ -149,8 +152,8 @@ const allnewcluster = async (mpns) => {
     if (source) {
       await optimizePage(page);
       await page.authenticate({
-        username: "cheapr",
-        password: "Cheapr2023!",
+        username: "spb4pudldd",
+        password: "2selBrep0w0TmcgL5Y",
       });
       let text = typeof source == "string" ? source.trim() : source.toString();
       await page.goto(`https://www.adorama.com/`, {
@@ -271,7 +274,10 @@ const allnewcluster = async (mpns) => {
     }
   };
   const get_barcodesinc = async function ({ page, data: source }) {
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
@@ -395,7 +401,10 @@ const allnewcluster = async (mpns) => {
     }
   };
   const get_radwell = async function ({ page, data: source }) {
-    await page.authenticate({ username: "cheapr", password: "Cheapr2023!" });
+    await page.authenticate({
+      username: "spb4pudldd",
+      password: "2selBrep0w0TmcgL5Y",
+    });
     await optimizePage(page);
     if (source) {
       let text = typeof source == "string" ? source.trim() : source.toString();
